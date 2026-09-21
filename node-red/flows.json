@@ -1,0 +1,1026 @@
+[
+  {
+    "id": "broker1",
+    "type": "mqtt-broker",
+    "name": "HiveMQ Publico",
+    "broker": "broker.hivemq.com",
+    "port": "1883",
+    "clientid": "",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "uibase",
+    "type": "ui_base",
+    "theme": {
+      "name": "theme-dark",
+      "lightTheme": {
+        "default": "#0094CE",
+        "baseColor": "#0094CE",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif",
+        "edited": false
+      },
+      "darkTheme": {
+        "default": "#097479",
+        "baseColor": "#097479",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif",
+        "edited": true,
+        "reset": false
+      },
+      "customTheme": {
+        "name": "Untitled Theme 1",
+        "default": "#4B7930",
+        "baseColor": "#4B7930",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif"
+      },
+      "themeState": {
+        "base-color": {
+          "default": "#097479",
+          "value": "#097479",
+          "edited": false
+        },
+        "page-titlebar-backgroundColor": {
+          "value": "#097479",
+          "edited": false
+        },
+        "page-backgroundColor": {
+          "value": "#111111",
+          "edited": false
+        },
+        "page-sidebar-backgroundColor": {
+          "value": "#000000",
+          "edited": false
+        },
+        "group-textColor": {
+          "value": "#0eb8c0",
+          "edited": false
+        },
+        "group-borderColor": {
+          "value": "#555555",
+          "edited": false
+        },
+        "group-backgroundColor": {
+          "value": "#333333",
+          "edited": false
+        },
+        "widget-textColor": {
+          "value": "#eeeeee",
+          "edited": false
+        },
+        "widget-backgroundColor": {
+          "value": "#097479",
+          "edited": false
+        },
+        "widget-borderColor": {
+          "value": "#333333",
+          "edited": false
+        },
+        "base-font": {
+          "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif"
+        }
+      },
+      "angularTheme": {
+        "primary": "indigo",
+        "accents": "blue",
+        "warn": "red",
+        "background": "grey",
+        "palette": "light"
+      }
+    },
+    "site": {
+      "name": "Sistema de Seguranca IoT",
+      "hideToolbar": "false",
+      "allowSwipe": "false",
+      "lockMenu": "false",
+      "allowTempTheme": "true",
+      "dateFormat": "DD/MM/YYYY",
+      "sizes": {
+        "sx": 48,
+        "sy": 48,
+        "gx": 6,
+        "gy": 6,
+        "cx": 6,
+        "cy": 6,
+        "px": 0,
+        "py": 0
+      }
+    }
+  },
+  {
+    "id": "uitab",
+    "type": "ui_tab",
+    "name": "Seguranca",
+    "icon": "fa-shield",
+    "order": 1,
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "g_status",
+    "type": "ui_group",
+    "name": "Status do Sistema",
+    "tab": "uitab",
+    "order": 1,
+    "disp": true,
+    "width": "6",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "g_sensores",
+    "type": "ui_group",
+    "name": "Sensores",
+    "tab": "uitab",
+    "order": 2,
+    "disp": true,
+    "width": "6",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "g_grafico",
+    "type": "ui_group",
+    "name": "Historico",
+    "tab": "uitab",
+    "order": 3,
+    "disp": true,
+    "width": "12",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "g_alertas",
+    "type": "ui_group",
+    "name": "Alertas",
+    "tab": "uitab",
+    "order": 4,
+    "disp": true,
+    "width": "6",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "g_controle",
+    "type": "ui_group",
+    "name": "Controle",
+    "tab": "uitab",
+    "order": 5,
+    "disp": true,
+    "width": "6",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "flowtab",
+    "type": "tab",
+    "label": "Sistema de Seguranca",
+    "disabled": false,
+    "info": "Fluxo do projeto IoT - Sistema de Seguranca Residencial\nESP32 -> MQTT (HiveMQ) -> Node-RED -> Dashboard"
+  },
+  {
+    "id": "in_status",
+    "type": "mqtt in",
+    "z": "flowtab",
+    "name": "MQTT: status",
+    "topic": "fatec/seguranca/casa01/status",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 100,
+    "wires": [
+      [
+        "fn_status"
+      ]
+    ]
+  },
+  {
+    "id": "fn_status",
+    "type": "function",
+    "z": "flowtab",
+    "name": "Traduz estado -> UI",
+    "func": "\n// Recebe o estado textual publicado pelo ESP32 e prepara:\n//  saida 1 -> texto do estado\n//  saida 2 -> badge colorido\n//  saida 3 -> valor numerico para o grafico\nconst estado = String(msg.payload).trim().toUpperCase();\n\nconst mapa = {\n    \"DESARMADO\": { cor: \"#2ecc71\", nivel: 0, icone: \"\\uD83D\\uDFE2\" },\n    \"SAINDO\":    { cor: \"#3498db\", nivel: 1, icone: \"\\uD83D\\uDD35\" },\n    \"ARMADO\":    { cor: \"#3498db\", nivel: 2, icone: \"\\uD83D\\uDD12\" },\n    \"ENTRANDO\":  { cor: \"#f39c12\", nivel: 3, icone: \"\\u26A0\\uFE0F\" },\n    \"ALARME\":    { cor: \"#e74c3c\", nivel: 4, icone: \"\\uD83D\\uDD34\" },\n    \"BLOQUEADO\": { cor: \"#f1c40f\", nivel: 3, icone: \"\\uD83D\\uDEAB\" }\n};\nconst info = mapa[estado] || { cor: \"#888888\", nivel: 0, icone: \"?\" };\n\nflow.set(\"estado\", estado);\n\nconst texto  = { payload: info.icone + \"  \" + estado };\nconst badge  = { payload: estado, cor: info.cor };\nconst grafico = { topic: \"Nivel de alerta\", payload: info.nivel };\n\nreturn [texto, badge, grafico];\n",
+    "outputs": 3,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 100,
+    "wires": [
+      [
+        "txt_estado",
+        "fn_regra"
+      ],
+      [
+        "tpl_estado"
+      ],
+      [
+        "chart_nivel"
+      ]
+    ]
+  },
+  {
+    "id": "txt_estado",
+    "type": "ui_text",
+    "z": "flowtab",
+    "group": "g_status",
+    "order": 1,
+    "width": "6",
+    "height": "1",
+    "name": "Estado",
+    "label": "Estado",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": "",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#000000",
+    "x": 760,
+    "y": 60,
+    "wires": []
+  },
+  {
+    "id": "tpl_estado",
+    "type": "ui_template",
+    "z": "flowtab",
+    "group": "g_status",
+    "name": "Badge do estado",
+    "order": 2,
+    "width": "6",
+    "height": "2",
+    "format": "\n<div style=\"display:flex;align-items:center;justify-content:center;\n            height:100%;border-radius:8px;font-weight:700;font-size:22px;\n            color:#fff;letter-spacing:1px;\n            background:{{msg.cor}};transition:background .3s;\">\n    {{msg.payload}}\n</div>\n",
+    "storeOutMessages": true,
+    "fwdInMessages": true,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 780,
+    "y": 120,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "in_tele",
+    "type": "mqtt in",
+    "z": "flowtab",
+    "name": "MQTT: telemetria",
+    "topic": "fatec/seguranca/casa01/telemetria",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 220,
+    "wires": [
+      [
+        "fn_tele"
+      ]
+    ]
+  },
+  {
+    "id": "fn_tele",
+    "type": "function",
+    "z": "flowtab",
+    "name": "Distribui telemetria",
+    "func": "\n// A telemetria chega como JSON a cada 5 s.\n// Guardamos o instante para o watchdog de comunicacao.\nlet d = msg.payload;\nif (typeof d === \"string\") { try { d = JSON.parse(d); } catch (e) { return null; } }\n\nflow.set(\"ultimaTelemetria\", Date.now());\nflow.set(\"telemetria\", d);\n\nconst movimento = { payload: d.movimento ? \"\\uD83D\\uDEB6 MOVIMENTO\" : \"\\u2713 Sem movimento\" };\nconst porta     = { payload: d.porta === \"ABERTA\" ? \"\\uD83D\\uDEAA ABERTA\" : \"\\uD83D\\uDD12 Fechada\" };\nconst rssi      = { payload: Number(d.rssi) || -100 };\nconst sirene    = { payload: d.sirene ? \"\\uD83D\\uDD0A LIGADA\" : \"Desligada\" };\nconst grafRssi  = { topic: \"RSSI (dBm)\", payload: Number(d.rssi) || -100 };\n\nreturn [movimento, porta, rssi, sirene, grafRssi];\n",
+    "outputs": 5,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 220,
+    "wires": [
+      [
+        "txt_mov"
+      ],
+      [
+        "txt_porta"
+      ],
+      [
+        "gauge_rssi"
+      ],
+      [
+        "txt_sirene"
+      ],
+      [
+        "chart_rssi"
+      ]
+    ]
+  },
+  {
+    "id": "txt_mov",
+    "type": "ui_text",
+    "z": "flowtab",
+    "group": "g_sensores",
+    "order": 1,
+    "width": "6",
+    "height": "1",
+    "name": "Movimento",
+    "label": "Movimento",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": "",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#000000",
+    "x": 760,
+    "y": 180,
+    "wires": []
+  },
+  {
+    "id": "txt_porta",
+    "type": "ui_text",
+    "z": "flowtab",
+    "group": "g_sensores",
+    "order": 2,
+    "width": "6",
+    "height": "1",
+    "name": "Porta",
+    "label": "Porta",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": "",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#000000",
+    "x": 760,
+    "y": 220,
+    "wires": []
+  },
+  {
+    "id": "txt_sirene",
+    "type": "ui_text",
+    "z": "flowtab",
+    "group": "g_sensores",
+    "order": 3,
+    "width": "6",
+    "height": "1",
+    "name": "Sirene",
+    "label": "Sirene",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": "",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#000000",
+    "x": 760,
+    "y": 260,
+    "wires": []
+  },
+  {
+    "id": "gauge_rssi",
+    "type": "ui_gauge",
+    "z": "flowtab",
+    "name": "Sinal Wi-Fi",
+    "group": "g_sensores",
+    "order": 4,
+    "width": "6",
+    "height": "4",
+    "gtype": "gage",
+    "title": "Sinal Wi-Fi (dBm)",
+    "label": "dBm",
+    "format": "{{value}}",
+    "min": "-100",
+    "max": "-30",
+    "colors": [
+      "#e74c3c",
+      "#f39c12",
+      "#2ecc71"
+    ],
+    "seg1": "-80",
+    "seg2": "-60",
+    "diff": false,
+    "className": "",
+    "x": 780,
+    "y": 300,
+    "wires": []
+  },
+  {
+    "id": "chart_nivel",
+    "type": "ui_chart",
+    "z": "flowtab",
+    "name": "Nivel de alerta",
+    "group": "g_grafico",
+    "order": 1,
+    "width": "12",
+    "height": "5",
+    "label": "Nivel de alerta ao longo do tempo",
+    "chartType": "line",
+    "legend": "true",
+    "xformat": "HH:mm:ss",
+    "interpolate": "step",
+    "nodata": "aguardando dados...",
+    "dot": false,
+    "ymin": "0",
+    "ymax": "4",
+    "removeOlder": "30",
+    "removeOlderPoints": "300",
+    "removeOlderUnit": "60",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [
+      "#e74c3c",
+      "#3498db",
+      "#2ecc71",
+      "#f39c12",
+      "#9b59b6",
+      "#1abc9c"
+    ],
+    "outputs": 1,
+    "useDifferentColor": false,
+    "className": "",
+    "x": 800,
+    "y": 360,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "chart_rssi",
+    "type": "ui_chart",
+    "z": "flowtab",
+    "name": "Qualidade do sinal",
+    "group": "g_grafico",
+    "order": 2,
+    "width": "12",
+    "height": "5",
+    "label": "Qualidade do sinal Wi-Fi",
+    "chartType": "line",
+    "legend": "true",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "aguardando dados...",
+    "dot": false,
+    "ymin": "-100",
+    "ymax": "-30",
+    "removeOlder": "30",
+    "removeOlderPoints": "300",
+    "removeOlderUnit": "60",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [
+      "#1abc9c",
+      "#3498db",
+      "#2ecc71",
+      "#f39c12",
+      "#9b59b6",
+      "#e74c3c"
+    ],
+    "outputs": 1,
+    "useDifferentColor": false,
+    "className": "",
+    "x": 800,
+    "y": 420,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "in_alerta",
+    "type": "mqtt in",
+    "z": "flowtab",
+    "name": "MQTT: alerta",
+    "topic": "fatec/seguranca/casa01/alerta",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 480,
+    "wires": [
+      [
+        "fn_alerta"
+      ]
+    ]
+  },
+  {
+    "id": "in_evento",
+    "type": "mqtt in",
+    "z": "flowtab",
+    "name": "MQTT: evento (log)",
+    "topic": "fatec/seguranca/casa01/evento",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 540,
+    "wires": [
+      [
+        "fn_evento",
+        "dbg"
+      ]
+    ]
+  },
+  {
+    "id": "fn_alerta",
+    "type": "function",
+    "z": "flowtab",
+    "name": "Trata alerta",
+    "func": "\n// Todo alerta vira: notificacao na tela + linha no historico.\nconst texto = String(msg.payload);\nconst hora  = new Date().toLocaleTimeString(\"pt-BR\");\n\nlet hist = flow.get(\"historico\") || [];\nhist.unshift({ hora: hora, texto: texto });\nif (hist.length > 12) hist = hist.slice(0, 12);\nflow.set(\"historico\", hist);\n\nnode.status({ fill: \"red\", shape: \"dot\", text: texto });\n\nconst toast = { payload: texto, topic: \"\\u26A0\\uFE0F ALERTA\" };\nconst lista = { payload: hist };\nreturn [toast, lista];\n",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 480,
+    "wires": [
+      [
+        "toast_alerta"
+      ],
+      [
+        "tpl_hist"
+      ]
+    ]
+  },
+  {
+    "id": "fn_evento",
+    "type": "function",
+    "z": "flowtab",
+    "name": "Registra evento",
+    "func": "\n// Log estruturado: entra JSON, sai linha legivel para o historico.\nlet e = msg.payload;\nif (typeof e === \"string\") { try { e = JSON.parse(e); } catch (err) { return null; } }\n\nconst hora = new Date().toLocaleTimeString(\"pt-BR\");\nconst linha = e.tipo + \" (\" + e.origem + \") - \" + e.descricao;\n\nlet hist = flow.get(\"historico\") || [];\nhist.unshift({ hora: hora, texto: linha });\nif (hist.length > 12) hist = hist.slice(0, 12);\nflow.set(\"historico\", hist);\n\nreturn { payload: hist };\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 540,
+    "wires": [
+      [
+        "tpl_hist"
+      ]
+    ]
+  },
+  {
+    "id": "toast_alerta",
+    "type": "ui_toast",
+    "z": "flowtab",
+    "position": "top right",
+    "displayTime": "6",
+    "highlight": "red",
+    "sendall": true,
+    "outputs": 0,
+    "ok": "OK",
+    "cancel": "",
+    "raw": false,
+    "className": "",
+    "topic": "",
+    "name": "Notificacao",
+    "x": 800,
+    "y": 480,
+    "wires": []
+  },
+  {
+    "id": "tpl_hist",
+    "type": "ui_template",
+    "z": "flowtab",
+    "group": "g_alertas",
+    "name": "Historico de eventos",
+    "order": 2,
+    "width": "6",
+    "height": "6",
+    "format": "\n<div style=\"font-family:monospace;font-size:12px;max-height:220px;overflow:auto;\">\n  <div ng-if=\"!msg.payload || msg.payload.length===0\"\n       style=\"opacity:.6;padding:8px;\">Nenhum evento registrado ainda.</div>\n  <div ng-repeat=\"item in msg.payload\"\n       style=\"padding:4px 6px;border-bottom:1px solid rgba(255,255,255,.12);\">\n     <span style=\"opacity:.65;\">{{item.hora}}</span>\n     &nbsp;<span>{{item.texto}}</span>\n  </div>\n</div>\n",
+    "storeOutMessages": true,
+    "fwdInMessages": true,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 800,
+    "y": 540,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "in_conexao",
+    "type": "mqtt in",
+    "z": "flowtab",
+    "name": "MQTT: conexao (LWT)",
+    "topic": "fatec/seguranca/casa01/conexao",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 640,
+    "wires": [
+      [
+        "fn_conexao"
+      ]
+    ]
+  },
+  {
+    "id": "fn_conexao",
+    "type": "function",
+    "z": "flowtab",
+    "name": "Marca ultima conexao",
+    "func": "\nflow.set(\"conexao\", String(msg.payload));\nif (String(msg.payload) === \"online\") {\n    flow.set(\"ultimoHeartbeat\", Date.now());\n}\nreturn null;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 640,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "tick",
+    "type": "inject",
+    "z": "flowtab",
+    "name": "a cada 3 s",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "3",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 130,
+    "y": 700,
+    "wires": [
+      [
+        "fn_watchdog"
+      ]
+    ]
+  },
+  {
+    "id": "fn_watchdog",
+    "type": "function",
+    "z": "flowtab",
+    "name": "Watchdog de comunicacao",
+    "func": "\n// Se nao chega heartbeat/telemetria ha mais de 10 s, o dispositivo\n// e considerado OFFLINE e um alerta e gerado uma unica vez.\nconst agora = Date.now();\nconst ultimo = Math.max(flow.get(\"ultimoHeartbeat\") || 0,\n                        flow.get(\"ultimaTelemetria\") || 0);\nconst lwt = flow.get(\"conexao\") || \"offline\";\n\nconst online = (lwt === \"online\") && (agora - ultimo < 10000);\nconst anterior = flow.get(\"online\");\nflow.set(\"online\", online);\n\nconst badge = {\n    payload: online ? \"\\uD83D\\uDFE2 ONLINE\" : \"\\uD83D\\uDD34 OFFLINE\",\n    cor: online ? \"#2ecc71\" : \"#e74c3c\"\n};\n\n// Alerta somente na transicao online -> offline\nlet alerta = null;\nif (anterior === true && online === false) {\n    alerta = { payload: \"Central de alarme OFFLINE - comunicacao perdida\",\n               topic: \"\\uD83D\\uDCE1 COMUNICACAO\" };\n}\n\nnode.status({ fill: online ? \"green\" : \"red\", shape: \"dot\",\n              text: online ? \"online\" : \"offline\" });\n\nreturn [badge, alerta];\n",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 700,
+    "wires": [
+      [
+        "tpl_conexao"
+      ],
+      [
+        "toast_alerta"
+      ]
+    ]
+  },
+  {
+    "id": "tpl_conexao",
+    "type": "ui_template",
+    "z": "flowtab",
+    "group": "g_status",
+    "name": "Status da comunicacao",
+    "order": 3,
+    "width": "6",
+    "height": "1",
+    "format": "\n<div style=\"display:flex;align-items:center;justify-content:center;\n            height:100%;border-radius:8px;font-weight:600;font-size:16px;\n            color:#fff;background:{{msg.cor}};\">\n    {{msg.payload}}\n</div>\n",
+    "storeOutMessages": true,
+    "fwdInMessages": true,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 800,
+    "y": 700,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "fn_regra",
+    "type": "function",
+    "z": "flowtab",
+    "name": "Regra: alarme prolongado",
+    "func": "\n// Automacao no proprio Node-RED:\n// se o sistema entra em ALARME, dispara um trigger de 30 s.\n// Se em 30 s o estado ainda for ALARME, gera alerta de escalonamento.\nif (String(msg.payload).toUpperCase() === \"ALARME\") {\n    return { payload: \"iniciar\" };\n}\nreturn { reset: true };\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 780,
+    "wires": [
+      [
+        "trigger30"
+      ]
+    ]
+  },
+  {
+    "id": "trigger30",
+    "type": "trigger",
+    "z": "flowtab",
+    "name": "espera 30 s",
+    "op1": "",
+    "op2": "1",
+    "op1type": "nul",
+    "op2type": "str",
+    "duration": "30",
+    "extend": false,
+    "overrideDelay": false,
+    "units": "s",
+    "reset": "",
+    "bytopic": "all",
+    "topic": "topic",
+    "outputs": 1,
+    "x": 580,
+    "y": 780,
+    "wires": [
+      [
+        "fn_escalona"
+      ]
+    ]
+  },
+  {
+    "id": "fn_escalona",
+    "type": "function",
+    "z": "flowtab",
+    "name": "Escalona alarme",
+    "func": "\nif (flow.get(\"estado\") === \"ALARME\") {\n    return { payload: \"Alarme ativo ha mais de 30 s sem desarme - \"\n                    + \"acionar responsavel / central de monitoramento\",\n             topic: \"\\uD83D\\uDEA8 ESCALONAMENTO\" };\n}\nreturn null;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 780,
+    "y": 780,
+    "wires": [
+      [
+        "toast_alerta"
+      ]
+    ]
+  },
+  {
+    "id": "btn_armar",
+    "type": "ui_button",
+    "z": "flowtab",
+    "name": "Armar",
+    "group": "g_controle",
+    "order": 1,
+    "width": "3",
+    "height": "1",
+    "passthru": false,
+    "label": "ARMAR",
+    "tooltip": "Arma o sistema (delay de saida de 15 s)",
+    "color": "#ffffff",
+    "bgcolor": "#3498db",
+    "className": "",
+    "icon": "fa-lock",
+    "payload": "ARMAR",
+    "payloadType": "str",
+    "topic": "fatec/seguranca/casa01/comando",
+    "topicType": "str",
+    "x": 130,
+    "y": 860,
+    "wires": [
+      [
+        "mqtt_cmd"
+      ]
+    ]
+  },
+  {
+    "id": "btn_silenciar",
+    "type": "ui_button",
+    "z": "flowtab",
+    "name": "Silenciar",
+    "group": "g_controle",
+    "order": 3,
+    "width": "3",
+    "height": "1",
+    "passthru": false,
+    "label": "SILENCIAR",
+    "tooltip": "Corta a sirene mas mantem o alarme registrado",
+    "color": "#ffffff",
+    "bgcolor": "#f39c12",
+    "className": "",
+    "icon": "fa-volume-off",
+    "payload": "SILENCIAR",
+    "payloadType": "str",
+    "topic": "fatec/seguranca/casa01/comando",
+    "topicType": "str",
+    "x": 130,
+    "y": 920,
+    "wires": [
+      [
+        "mqtt_cmd"
+      ]
+    ]
+  },
+  {
+    "id": "btn_panico",
+    "type": "ui_button",
+    "z": "flowtab",
+    "name": "Panico",
+    "group": "g_controle",
+    "order": 4,
+    "width": "6",
+    "height": "1",
+    "passthru": false,
+    "label": "BOTAO DE PANICO",
+    "tooltip": "Dispara o alarme imediatamente",
+    "color": "#ffffff",
+    "bgcolor": "#c0392b",
+    "className": "",
+    "icon": "fa-exclamation-triangle",
+    "payload": "PANICO",
+    "payloadType": "str",
+    "topic": "fatec/seguranca/casa01/comando",
+    "topicType": "str",
+    "x": 130,
+    "y": 980,
+    "wires": [
+      [
+        "mqtt_cmd"
+      ]
+    ]
+  },
+  {
+    "id": "inp_senha",
+    "type": "ui_text_input",
+    "z": "flowtab",
+    "name": "Senha",
+    "label": "Senha",
+    "tooltip": "Senha de desarme",
+    "group": "g_controle",
+    "order": 5,
+    "width": "3",
+    "height": "1",
+    "passthru": true,
+    "mode": "password",
+    "delay": "300",
+    "topic": "senha",
+    "sendOnBlur": true,
+    "className": "",
+    "topicType": "str",
+    "x": 130,
+    "y": 1040,
+    "wires": [
+      [
+        "guarda_senha"
+      ]
+    ]
+  },
+  {
+    "id": "guarda_senha",
+    "type": "change",
+    "z": "flowtab",
+    "name": "flow.senha",
+    "rules": [
+      {
+        "t": "set",
+        "p": "senha",
+        "pt": "flow",
+        "to": "payload",
+        "tot": "msg"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 360,
+    "y": 1040,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "btn_desarmar",
+    "type": "ui_button",
+    "z": "flowtab",
+    "name": "Desarmar",
+    "group": "g_controle",
+    "order": 2,
+    "width": "3",
+    "height": "1",
+    "passthru": false,
+    "label": "DESARMAR",
+    "tooltip": "Exige a senha digitada ao lado",
+    "color": "#ffffff",
+    "bgcolor": "#2ecc71",
+    "className": "",
+    "icon": "fa-unlock",
+    "payload": "",
+    "payloadType": "str",
+    "topic": "",
+    "topicType": "str",
+    "x": 130,
+    "y": 1100,
+    "wires": [
+      [
+        "fn_desarmar"
+      ]
+    ]
+  },
+  {
+    "id": "fn_desarmar",
+    "type": "function",
+    "z": "flowtab",
+    "name": "Monta comando de desarme",
+    "func": "\n// O desarme remoto so e aceito pelo ESP32 com a senha correta.\nconst senha = flow.get(\"senha\") || \"\";\nif (senha.length === 0) {\n    node.warn(\"Digite a senha antes de desarmar\");\n    return null;\n}\nreturn { topic: \"fatec/seguranca/casa01/comando\", payload: \"DESARMAR:\" + senha };\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 1100,
+    "wires": [
+      [
+        "mqtt_cmd"
+      ]
+    ]
+  },
+  {
+    "id": "mqtt_cmd",
+    "type": "mqtt out",
+    "z": "flowtab",
+    "name": "MQTT: comando",
+    "topic": "",
+    "qos": "0",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "broker1",
+    "x": 640,
+    "y": 960,
+    "wires": []
+  },
+  {
+    "id": "dbg",
+    "type": "debug",
+    "z": "flowtab",
+    "name": "debug eventos",
+    "active": false,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 640,
+    "y": 540,
+    "wires": []
+  }
+]

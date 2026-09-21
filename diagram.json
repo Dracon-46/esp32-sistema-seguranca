@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "author": "Projeto IoT - Sistema de Seguranca",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-v1",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-pir-motion-sensor",
+      "id": "pir",
+      "top": -140,
+      "left": -230,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "porta",
+      "top": -40,
+      "left": -230,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-membrane-keypad",
+      "id": "kp",
+      "top": 120,
+      "left": 160,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd",
+      "top": -180,
+      "left": 160,
+      "attrs": { "pins": "i2c", "background": "green" }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "bz",
+      "top": 80,
+      "left": -230,
+      "attrs": { "volume": "0.1" }
+    },
+    {
+      "type": "wokwi-rgb-led",
+      "id": "rgb",
+      "top": 200,
+      "left": -130,
+      "attrs": { "common": "cathode" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_red",
+      "top": 200,
+      "left": -230,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_green",
+      "top": 240,
+      "left": -230,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_blue",
+      "top": 280,
+      "left": -230,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_sirene",
+      "top": 330,
+      "left": -130,
+      "attrs": { "color": "red", "label": "SIRENE (rele)" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_sirene",
+      "top": 330,
+      "left": -230,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "pir:VCC", "esp:3V3", "red", [] ],
+    [ "pir:GND", "esp:GND.1", "black", [] ],
+    [ "pir:OUT", "esp:D13", "green", [] ],
+
+    [ "porta:2", "esp:D14", "green", [] ],
+    [ "porta:1", "esp:GND.2", "black", [] ],
+
+    [ "bz:1", "esp:GND.2", "black", [] ],
+    [ "bz:2", "esp:D12", "purple", [] ],
+
+    [ "esp:D25", "r_red:1", "red", [] ],
+    [ "r_red:2", "rgb:R", "red", [] ],
+    [ "esp:D26", "r_green:1", "green", [] ],
+    [ "r_green:2", "rgb:G", "green", [] ],
+    [ "esp:D33", "r_blue:1", "blue", [] ],
+    [ "r_blue:2", "rgb:B", "blue", [] ],
+    [ "rgb:COM", "esp:GND.3", "black", [] ],
+
+    [ "esp:D27", "r_sirene:1", "orange", [] ],
+    [ "r_sirene:2", "led_sirene:A", "orange", [] ],
+    [ "led_sirene:C", "esp:GND.3", "black", [] ],
+
+    [ "lcd:VCC", "esp:3V3", "red", [] ],
+    [ "lcd:GND", "esp:GND.3", "black", [] ],
+    [ "lcd:SDA", "esp:D21", "cyan", [] ],
+    [ "lcd:SCL", "esp:D22", "magenta", [] ],
+
+    [ "kp:R1", "esp:D19", "yellow", [] ],
+    [ "kp:R2", "esp:D18", "yellow", [] ],
+    [ "kp:R3", "esp:D5", "yellow", [] ],
+    [ "kp:R4", "esp:TX2", "yellow", [] ],
+    [ "kp:C1", "esp:RX2", "white", [] ],
+    [ "kp:C2", "esp:D4", "white", [] ],
+    [ "kp:C3", "esp:D2", "white", [] ],
+    [ "kp:C4", "esp:D15", "white", [] ]
+  ],
+  "dependencies": {}
+}

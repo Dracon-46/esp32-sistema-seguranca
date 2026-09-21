@@ -1,0 +1,116 @@
+================================================================
+PROJETO IoT - SISTEMA DE SEGURANCA
+2a ETAPA - DEFINICAO DOS REQUISITOS
+================================================================
+
+
+1. LISTA DE COMPONENTES
+----------------------------------------------------------------
+
+- ESP32 DevKit: microcontrolador principal, conecta ao Wi-Fi/MQTT.
+
+- Sensor PIR (HC-SR501): deteccao de movimento em ambientes
+  internos.
+
+- Sensor magnetico (reed switch): deteccao de abertura de
+  porta/janela.
+
+- Teclado matricial 4x4: digitacao de senha para armar/desarmar.
+
+- Buzzer piezoeletrico: alarme sonoro local.
+
+- LED RGB: indicacao visual de status (verde = desarmado,
+  vermelho = alarme, azul = armado).
+
+- Modulo rele 5V: aciona sirene externa ou trava eletrica.
+
+- Display LCD I2C 16x2: feedback local (status, mensagens de
+  erro).
+
+- Protoboard, jumpers e fonte 5V: montagem e alimentacao.
+
+Opcional (upgrade): modulo RFID RC522 como alternativa ou
+complemento a senha.
+
+
+2. REGRAS DE USO
+----------------------------------------------------------------
+
+- O sistema so monitora os sensores quando esta ARMADO (ativado
+  via senha no teclado ou botao no dashboard).
+
+- Ao armar, ha um delay de saida (ex: 15s) antes de ativar os
+  sensores, e um delay de entrada ao desarmar, para evitar
+  disparo acidental.
+
+- A senha tem numero limitado de tentativas (ex: 3); apos isso,
+  bloqueio temporario de 30s.
+
+- O status (armado, desarmado ou alarme disparado) deve estar
+  sempre visivel no LCD local e no dashboard.
+
+- Qualquer evento de violacao gera log/alerta registrado, mesmo
+  que o usuario desarme o sistema depois.
+
+
+3. EVENTOS
+----------------------------------------------------------------
+
+- Se houver movimento detectado com o sistema armado, o sistema
+  aciona o buzzer e o rele (sirene), acende o LED vermelho,
+  publica um alerta via MQTT e notifica o dashboard.
+
+- Se a porta ou janela for aberta com o sistema armado, ocorre a
+  mesma acao acima.
+
+- Se a senha correta for digitada, o sistema desarma, o LED fica
+  verde e o dashboard e atualizado.
+
+- Se houver 3 tentativas de senha incorretas, o sistema entra em
+  bloqueio temporario e gera um alerta de tentativa de invasao.
+
+- Se o ESP32 ficar sem comunicacao MQTT, o dashboard marca o
+  dispositivo como offline e gera um alerta.
+
+- Se o sistema estiver armado e nao houver eventos por um certo
+  tempo, o status permanece normal, sem nenhuma acao.
+
+
+4. AMBIENTE REAL DE USO
+----------------------------------------------------------------
+
+O sistema se destina a residencias (especialmente terreas, com
+portas ou janelas de facil acesso) e pequenos comercios.
+
+O sensor PIR cobriria a area interna principal, como a sala ou o
+corredor de entrada. O reed switch ficaria fixado na porta
+principal ou na janela mais vulneravel. O teclado e o LCD seriam
+instalados proximos a entrada, como em um painel de alarme
+comercial real.
+
+
+5. VALOR ESTIMADO (PROTOTIPO)
+----------------------------------------------------------------
+
+O ESP32 custa aproximadamente R$ 35,00. O sensor PIR custa cerca
+de R$ 15,00. O reed switch fica em torno de R$ 8,00. O teclado
+4x4 custa aproximadamente R$ 20,00. O buzzer custa cerca de
+R$ 5,00. O modulo rele fica em torno de R$ 12,00. O LED RGB custa
+aproximadamente R$ 3,00. O display LCD I2C 16x2 custa cerca de
+R$ 25,00. A protoboard, os jumpers e a fonte somam
+aproximadamente R$ 40,00.
+
+O valor total estimado para um prototipo unico fica em torno de
+R$ 163,00.
+
+Caso o prototipo fosse transformado em um produto real (fora do
+ambiente de simulacao), seria necessario somar um gabinete
+proprio, uma sirene externa mais robusta, uma bateria de backup
+(para funcionar em caso de queda de energia) e possivelmente um
+chip de dados ou SIM para redundancia de conexao. Com isso, o
+valor facilmente dobraria, chegando perto de R$ 300,00 a
+R$ 400,00 por unidade.
+
+================================================================
+FIM DO DOCUMENTO
+================================================================
