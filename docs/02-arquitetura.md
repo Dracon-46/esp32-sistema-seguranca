@@ -4,7 +4,7 @@
 
 | Camada | Elemento | Responsabilidade |
 |---|---|---|
-| Percepção | PIR, reed switch, teclado 4x4 | Capturar eventos físicos do ambiente |
+| Percepção | PIR, reed switch, DHT22, MQ-2, teclado 4x4 | Capturar eventos físicos do ambiente |
 | Controle | ESP32 (máquina de estados) | Decidir localmente quando disparar o alarme |
 | Atuação | Relé, buzzer, LED RGB, LCD | Reagir fisicamente e informar quem está no local |
 | Comunicação | Wi-Fi + MQTT (HiveMQ) | Transportar estado, telemetria e comandos |
@@ -31,8 +31,17 @@ A decisão de projeto mais importante foi manter **toda a lógica crítica dentr
        │                                       v
        └──────────── senha ────────────────  ALARME
 
-   3 senhas erradas ──> BLOQUEADO ──30 s──> ARMADO
+   3 senhas erradas (desarmado/armado) ──> BLOQUEADO ──30 s──> estado anterior
+   3 senhas erradas (entrando/alarme)  ──> ALARME
+   PIR/porta durante BLOQUEADO armado  ──> ALARME
+   temperatura ou gas acima do limite (qualquer estado) ──> ALARME
 ```
+
+O bloqueio guarda o estado anterior: se o sistema estava armado, os sensores continuam vigiando durante os 30 s. Assim, errar a senha de propósito não serve para "desligar" a central.
+
+## Zona 24 h (incêndio e gás)
+
+Temperatura (DHT22) e gás/fumaça (MQ-2) são vigiados o tempo todo, inclusive com o sistema desarmado, como numa central comercial. O MQ-2 passa 10 s aquecendo após o boot e a média dessa janela vira a referência de ar limpo; o alarme dispara quando a leitura sobe 35 pontos percentuais acima dela. Os dois sensores usam histerese para não gerar alertas repetidos quando o valor oscila em torno do limite.
 
 ## Loop não bloqueante
 

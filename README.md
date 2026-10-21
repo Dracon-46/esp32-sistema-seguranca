@@ -2,7 +2,7 @@
 
 Projeto IoT desenvolvido com **ESP32**, **PlatformIO**, **MQTT**, **Node-RED** e **Dashboard**, simulado no **Wokwi**.
 
-Uma central de alarme completa: detecta presença e abertura de porta, exige senha para armar/desarmar, dispara sirene, publica tudo por MQTT e é monitorada e controlada remotamente por um dashboard web.
+Uma central de alarme completa: detecta presença, abertura de porta, gás/fumaça e temperatura alta (incêndio), exige senha para armar/desarmar, dispara sirene, publica tudo por MQTT e é monitorada e controlada remotamente por um dashboard web.
 
 ---
 
@@ -15,6 +15,7 @@ Arrombamentos em residências e pequenos comércios costumam acontecer quando n�
 Construir uma central de alarme conectada, de baixo custo, que:
 
 - detecte invasões por **presença** e por **abertura de porta/janela**;
+- detecte **incêndio e vazamento de gás** (temperatura e gás/fumaça) a qualquer hora, mesmo desarmada;
 - permita **armar e desarmar por senha** num teclado físico, com delays de saída e entrada;
 - dispare **sirene, buzzer e sinalização visual** automaticamente;
 - envie **estado, leituras, alertas e log de eventos** por MQTT em tempo real;
@@ -30,6 +31,8 @@ Construir uma central de alarme conectada, de baixo custo, que:
  ------------          ---------------      -----------      --------------      -------------
   PIR (D13) ------>|
   Reed (D14) ----->|    +-----------+        MQTT/TCP        +------------+       +---------+
+  DHT22 (D23) ---->|
+  MQ-2  (D34) ---->|
   Teclado 4x4 ---->|--->|   ESP32   |=====>  porta 1883 =====>|   Broker   |<====>| Node-RED|
                    |    | Maquina de|        Wi-Fi           |  HiveMQ    |       |  (flow) |
   ATUADORES        |    |  estados  |                        +------------+       +----+----+
@@ -52,13 +55,15 @@ Construir uma central de alarme conectada, de baixo custo, que:
 | Microcontrolador | ESP32 DevKit v1 | — | Processamento, Wi-Fi e MQTT |
 | Sensor de presença | PIR HC-SR501 | D13 | Detecta movimento no ambiente |
 | Sensor de abertura | Reed switch | D14 (`INPUT_PULLUP`) | Detecta porta/janela aberta |
-| Teclado | Membrana 4x4 | D19, D18, D5, TX2 / RX2, D4, D2, D15 | Senha de armar/desarmar |
+| Sensor de temperatura | DHT22 | D23 | Temperatura e umidade (detector térmico de incêndio) |
+| Sensor de gás/fumaça | MQ-2 | D34 (ADC1, saída AOUT) | Vazamento de gás e fumaça |
+| Teclado | Membrana 4x4 | D19, D18, D5, TX2, RX2, D4, D2, D15 | Senha de armar/desarmar |
 | Buzzer | Piezoelétrico | D12 (LEDC/PWM) | Alarme sonoro local e bipes |
 | Sirene | Módulo relé 5 V | D27 | Aciona a sirene externa |
 | LED RGB | Cátodo comum | D25 / D26 / D33 | Status visual do sistema |
 | Display | LCD 16x2 I2C (0x27) | D21 (SDA) / D22 (SCL) | Interface local |
 
-> No Wokwi o **reed switch** é representado por uma chave deslizante e o **relé** por um LED vermelho rotulado `SIRENE`, já que a plataforma não simula a carga externa.
+> No Wokwi o **reed switch** é representado por uma chave deslizante e o **relé** por um LED vermelho rotulado `SIRENE`, já que a plataforma não simula a carga externa. O MQ-2 é alimentado em 3V3 para que a saída analógica nunca passe da faixa do ADC do ESP32; o nível de gás é ajustado no slider `ppm` do sensor durante a simulação, e a temperatura no slider do DHT22.
 
 ---
 
@@ -71,7 +76,7 @@ Construir uma central de alarme conectada, de baixo custo, que:
 | `ARMADO` | Azul lento | Vigilância ativa |
 | `ENTRANDO` | Vermelho piscando + bipes | Violação detectada, 10 s para digitar a senha |
 | `ALARME` | Vermelho rápido | Sirene e buzzer bitonal acionados |
-| `BLOQUEADO` | Amarelo piscando | Teclado travado por 30 s após 3 erros |
+| `BLOQUEADO` | Amarelo piscando | Teclado travado por 30 s após 3 erros; volta ao estado anterior (armado continua vigiando) |
 
 ---
 
@@ -84,9 +89,11 @@ Base: `fatec/seguranca/casa01`
 | `.../status` | ESP32 → | sim | `DESARMADO` \| `SAINDO` \| `ARMADO` \| `ENTRANDO` \| `ALARME` \| `BLOQUEADO` |
 | `.../sensor/movimento` | ESP32 → | não | `DETECTADO` \| `LIVRE` |
 | `.../sensor/porta` | ESP32 → | não | `ABERTA` \| `FECHADA` |
+| `.../sensor/temperatura` | ESP32 → | não | Temperatura em °C, ex.: `24.0` |
+| `.../sensor/gas` | ESP32 → | não | Nível de gás/fumaça em %, ex.: `8.3` |
 | `.../alerta` | ESP32 → | não | Texto do alerta |
 | `.../evento` | ESP32 → | não | JSON com `tipo`, `origem`, `estado`, `descricao`, `uptime_s` |
-| `.../telemetria` | ESP32 → | não | JSON com `estado`, `movimento`, `porta`, `sirene`, `rssi`, `uptime_s` |
+| `.../telemetria` | ESP32 → | não | JSON com `estado`, `movimento`, `porta`, `sirene`, `temperatura`, `umidade`, `gas`, `rssi`, `uptime_s` |
 | `.../conexao` | ESP32 → | sim | `online` \| `offline` (via **Last Will**) |
 | `.../comando` | → ESP32 | não | `ARMAR` \| `DESARMAR:<senha>` \| `SILENCIAR` \| `PANICO` \| `TESTE` |
 
@@ -100,7 +107,12 @@ Base: `fatec/seguranca/casa01`
 | Porta aberta com sistema `ARMADO` | Mesma ação acima |
 | Delay de entrada esgotado sem senha | Dispara `ALARME`: relé + buzzer + LED vermelho + alerta MQTT |
 | Senha correta | Desarma (ou arma, se estava desarmado) e atualiza o dashboard |
-| 3 senhas incorretas | Entra em `BLOQUEADO` por 30 s e publica alerta de tentativa de invasão |
+| 3 senhas incorretas (teclado ou dashboard) | Entra em `BLOQUEADO` por 30 s e publica alerta de tentativa de invasão |
+| 3 senhas incorretas durante `ENTRANDO` | Dispara o `ALARME` na hora (o bloqueio não pode ser usado para pausar a contagem) |
+| PIR ou porta durante `BLOQUEADO` (armado) | Dispara o `ALARME` direto, já que o teclado está travado |
+| Temperatura ≥ 57 °C | Alarme de **incêndio** em qualquer estado (zona 24 h) |
+| Gás/fumaça 35 pontos acima da referência | Alarme de **gás/fumaça** em qualquer estado (zona 24 h) |
+| Temperatura ≥ 45 °C ou gás 20 pontos acima | Pré-alerta no dashboard, sem sirene |
 | Sirene ligada por 60 s | Corta a sirene automaticamente, mas mantém o estado de alarme |
 | Botão de pânico (teclado `B` ou dashboard) | Dispara o alarme imediatamente |
 | Sem heartbeat por 10 s | Node-RED marca o dispositivo como **OFFLINE** e notifica |
@@ -112,12 +124,14 @@ Base: `fatec/seguranca/casa01`
 
 O dashboard (Node-RED Dashboard, em `/ui`) entrega os seis itens exigidos:
 
-- **Valores dos sensores** — movimento, porta, sirene e intensidade do sinal Wi-Fi
-- **Gráfico de dados** — nível de alerta e qualidade do sinal ao longo do tempo
+- **Valores dos sensores** — movimento, porta, sirene, temperatura, umidade, gás/fumaça e sinal Wi-Fi
+- **Gráfico de dados** — temperatura e gás, nível de alerta e qualidade do sinal ao longo do tempo
 - **Status dos dispositivos** — badge colorido com o estado atual da central
 - **Alertas** — notificações em tempo real e histórico das últimas 12 ocorrências
 - **Controle de atuador** — botões `ARMAR`, `DESARMAR`, `SILENCIAR` e `PÂNICO`
 - **Status da comunicação** — indicador ONLINE/OFFLINE com watchdog independente
+
+![Dashboard durante um alarme](docs/img/dashboard-alarme.png)
 
 ---
 
@@ -188,20 +202,22 @@ mosquitto_pub -h broker.hivemq.com -t 'fatec/seguranca/casa01/comando' -m 'ARMAR
 ├── node-red/
 │   └── flows.json          Fluxo e dashboard prontos para importar
 └── docs/
-    ├── 01-definicao-requisitos.md
+    ├── 01-definicao-requisitos.txt
     ├── 02-arquitetura.md
-    └── 03-eventos.md
+    ├── 03-eventos.md
+    ├── Roteiro_Projeto_IoT_Sistema_Seguranca.docx   Roteiro da atividade preenchido
+    └── img/                Prints do fluxo Node-RED e do dashboard
 ```
 
 ---
 
 ## Ambiente real de uso
 
-Residências térreas e pequenos comércios. O PIR cobre a área interna principal (sala ou corredor de entrada), o reed switch fica na porta principal ou na janela mais vulnerável, e o teclado com LCD é instalado ao lado da entrada, como num painel de alarme comercial.
+Residências térreas e pequenos comércios. O PIR cobre a área interna principal (sala ou corredor de entrada), o reed switch fica na porta principal ou na janela mais vulnerável, o MQ-2 fica na cozinha (perto do botijão) e o DHT22 no teto do ambiente principal, e o teclado com LCD é instalado ao lado da entrada, como num painel de alarme comercial.
 
 ## Custo estimado
 
-O protótipo completo sai por aproximadamente **R$ 163,00**. Como produto real seriam necessários gabinete próprio, sirene externa robusta, bateria de backup e eventualmente conectividade celular para redundância, elevando o custo para a faixa de **R$ 300,00 a R$ 400,00** por unidade — ainda bem abaixo dos sistemas monitorados de mercado, que cobram mensalidade.
+O protótipo completo sai por aproximadamente **R$ 200,00**. Como produto real seriam necessários gabinete próprio, sirene externa robusta, bateria de backup e eventualmente conectividade celular para redundância, elevando o custo para a faixa de **R$ 300,00 a R$ 400,00** por unidade — ainda bem abaixo dos sistemas monitorados de mercado, que cobram mensalidade.
 
 ## Conclusão
 

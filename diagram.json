@@ -86,6 +86,20 @@
       "top": 330,
       "left": -230,
       "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht",
+      "top": -150,
+      "left": -360,
+      "attrs": { "temperature": "24", "humidity": "40" }
+    },
+    {
+      "type": "wokwi-gas-sensor",
+      "id": "gas",
+      "top": 30,
+      "left": -420,
+      "attrs": { "ppm": "400" }
     }
   ],
   "connections": [
@@ -105,14 +119,14 @@
     [ "r_green:2", "rgb:G", "green", [] ],
     [ "esp:D33", "r_blue:1", "blue", [] ],
     [ "r_blue:2", "rgb:B", "blue", [] ],
-    [ "rgb:COM", "esp:GND.3", "black", [] ],
+    [ "rgb:COM", "esp:GND.1", "black", [] ],
 
     [ "esp:D27", "r_sirene:1", "orange", [] ],
     [ "r_sirene:2", "led_sirene:A", "orange", [] ],
-    [ "led_sirene:C", "esp:GND.3", "black", [] ],
+    [ "led_sirene:C", "esp:GND.1", "black", [] ],
 
     [ "lcd:VCC", "esp:3V3", "red", [] ],
-    [ "lcd:GND", "esp:GND.3", "black", [] ],
+    [ "lcd:GND", "esp:GND.2", "black", [] ],
     [ "lcd:SDA", "esp:D21", "cyan", [] ],
     [ "lcd:SCL", "esp:D22", "magenta", [] ],
 
@@ -123,7 +137,15 @@
     [ "kp:C1", "esp:RX2", "white", [] ],
     [ "kp:C2", "esp:D4", "white", [] ],
     [ "kp:C3", "esp:D2", "white", [] ],
-    [ "kp:C4", "esp:D15", "white", [] ]
+    [ "kp:C4", "esp:D15", "white", [] ],
+
+    [ "dht:VCC", "esp:3V3", "red", [] ],
+    [ "dht:GND", "esp:GND.1", "black", [] ],
+    [ "dht:SDA", "esp:D23", "green", [] ],
+
+    [ "gas:VCC", "esp:3V3", "red", [] ],
+    [ "gas:GND", "esp:GND.1", "black", [] ],
+    [ "gas:AOUT", "esp:D34", "orange", [] ]
   ],
   "dependencies": {}
 }

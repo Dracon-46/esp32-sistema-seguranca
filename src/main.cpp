@@ -6,6 +6,7 @@
  *  Central de alarme com:
  *   - sensor de presenca (PIR)
  *   - sensor de abertura de porta (reed switch)
+ *   - sensor de gas/fumaca (MQ-2) e de temperatura (DHT22) - zona 24 h
  *   - teclado 4x4 para armar / desarmar por senha
  *   - sirene (rele), buzzer local, LED RGB de status e LCD 16x2
  *   - publicacao de estado, sensores, alertas e telemetria por MQTT
@@ -23,6 +24,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <Keypad.h>
 #include <ArduinoJson.h>
+#include <DHTesp.h>
 
 #include "config.h"
 
@@ -39,6 +41,7 @@ enum EstadoSistema {
 };
 
 EstadoSistema estado = DESARMADO;
+EstadoSistema estadoAntesBloqueio = DESARMADO;   // para onde voltar apos o bloqueio
 
 const char *nomeEstado(EstadoSistema e) {
   switch (e) {
@@ -69,6 +72,8 @@ byte pinosColuna[KEYPAD_COLUNAS] = { PIN_KP_C1, PIN_KP_C2, PIN_KP_C3, PIN_KP_C4 
 Keypad teclado = Keypad(makeKeymap(mapaTeclas), pinosLinha, pinosColuna,
                         KEYPAD_LINHAS, KEYPAD_COLUNAS);
 
+DHTesp dht;
+
 WiFiClient   wifiClient;
 PubSubClient mqtt(wifiClient);
 
@@ -86,6 +91,16 @@ bool sireneSilenciada   = false;
 
 String ultimaOrigemAlarme = "-";
 
+// Zona 24 h (incendio / gas)
+float temperatura   = NAN;
+float umidade       = NAN;
+float gasPct        = 0;      // leitura atual do MQ-2 em % da escala do ADC
+float gasReferencia = -1;     // media em ar limpo medida no aquecimento
+float somaGasAquecimento = 0;
+uint16_t amostrasGas     = 0;
+bool alertaTemp = false, alarmeTemp = false;
+bool alertaGas  = false, alarmeGas  = false;
+
 unsigned long tEstado        = 0;   // quando entramos no estado atual
 unsigned long tUltimaTecla   = 0;
 unsigned long tUltimoPir     = 0;
@@ -95,6 +110,7 @@ unsigned long tHeartbeat     = 0;
 unsigned long tReconexao     = 0;
 unsigned long tBuzzer        = 0;
 unsigned long tLcd           = 0;
+unsigned long tAmbiente      = 0;
 
 bool buzzerLigado = false;
 
@@ -113,6 +129,7 @@ void atualizarLcd(const String &l1, const String &l2);
 void setLed(bool r, bool g, bool b);
 void buzzerTom(unsigned int frequencia);
 void buzzerDesligar();
+void registrarSenhaIncorreta(const char *origem);
 
 // ============================================================
 //  BUZZER - compativel com Arduino core 2.x e 3.x do ESP32
@@ -238,8 +255,7 @@ void aoReceberMensagem(char *topico, byte *payload, unsigned int tamanho) {
       mudarEstado(DESARMADO, "DASHBOARD");
     } else {
       publicarAlerta("Tentativa de desarme remoto com senha incorreta");
-      publicarEvento("SENHA_INCORRETA", "DASHBOARD",
-                     "Desarme remoto recusado por senha invalida");
+      registrarSenhaIncorreta("DASHBOARD");
     }
 
   } else if (msg == "SILENCIAR") {
@@ -339,8 +355,11 @@ void publicarTelemetria() {
   doc["rssi"]        = WiFi.RSSI();
   doc["uptime_s"]    = millis() / 1000;
   doc["origem_alarme"] = ultimaOrigemAlarme;
+  if (!isnan(temperatura)) doc["temperatura"] = roundf(temperatura * 10) / 10;
+  if (!isnan(umidade))     doc["umidade"]     = roundf(umidade * 10) / 10;
+  doc["gas"] = roundf(gasPct * 10) / 10;
 
-  char buffer[256];
+  char buffer[384];
   serializeJson(doc, buffer, sizeof(buffer));
   mqtt.publish(TOPIC_TELEMETRIA, buffer);
 }
@@ -383,13 +402,17 @@ void mudarEstado(EstadoSistema novo, const char *origem) {
       publicarAlerta("Entrada detectada - aguardando desarme");
       break;
 
-    case ALARME:
+    case ALARME: {
       sireneLigada     = !sireneSilenciada;
       digitalWrite(PIN_RELE, sireneLigada ? HIGH : LOW);
       setLed(true, false, false);              // vermelho
       publicarEvento("ALARME", origem, "ALARME DISPARADO");
-      publicarAlerta("ALARME DISPARADO - INVASAO DETECTADA");
+      char msg[80];
+      snprintf(msg, sizeof(msg), "ALARME DISPARADO - origem: %s",
+               ultimaOrigemAlarme.c_str());
+      publicarAlerta(msg);
       break;
+    }
 
     case BLOQUEADO:
       buzzerDesligar();
@@ -406,6 +429,21 @@ void mudarEstado(EstadoSistema novo, const char *origem) {
 // ============================================================
 //  LEITURA DOS SENSORES
 // ============================================================
+
+// Vigilancia ativa: armado, ou teclado bloqueado enquanto estava armado.
+// Assim errar a senha 3 vezes nao "desliga" os sensores.
+bool vigilanciaAtiva() {
+  return estado == ARMADO ||
+         (estado == BLOQUEADO && estadoAntesBloqueio == ARMADO);
+}
+
+// Violacao de PIR ou porta: armado -> delay de entrada;
+// durante o bloqueio do teclado nao ha como desarmar -> alarme direto.
+void violacao(const char *origem) {
+  ultimaOrigemAlarme = origem;
+  mudarEstado(estado == BLOQUEADO ? ALARME : ENTRANDO, origem);
+}
+
 void lerSensores() {
   // --- PIR ---
   if (millis() - tUltimoPir > DEBOUNCE_SENSOR_MS) {
@@ -416,10 +454,7 @@ void lerSensores() {
       if (mqtt.connected()) {
         mqtt.publish(TOPIC_MOVIMENTO, movimentoDetectado ? "DETECTADO" : "LIVRE");
       }
-      if (movimentoDetectado && (estado == ARMADO)) {
-        ultimaOrigemAlarme = "PIR";
-        mudarEstado(ENTRANDO, "PIR");
-      }
+      if (movimentoDetectado && vigilanciaAtiva()) violacao("PIR");
     }
   }
 
@@ -433,11 +468,95 @@ void lerSensores() {
       if (mqtt.connected()) {
         mqtt.publish(TOPIC_PORTA, portaAberta ? "ABERTA" : "FECHADA");
       }
-      if (portaAberta && (estado == ARMADO)) {
-        ultimaOrigemAlarme = "PORTA";
-        mudarEstado(ENTRANDO, "PORTA");
-      }
+      if (portaAberta && vigilanciaAtiva()) violacao("PORTA");
     }
+  }
+}
+
+// ============================================================
+//  ZONA 24 H - TEMPERATURA (DHT22) E GAS/FUMACA (MQ-2)
+//  Funciona em qualquer estado: incendio e vazamento de gas
+//  disparam o alarme mesmo com o sistema desarmado.
+// ============================================================
+void dispararZona24h(const char *origem) {
+  ultimaOrigemAlarme = origem;
+  if (estado == ALARME) {
+    publicarEvento("ALARME", origem, "Nova origem de alarme com alarme ativo");
+  } else {
+    mudarEstado(ALARME, origem);
+  }
+}
+
+void lerAmbiente() {
+  if (millis() - tAmbiente < INTERVALO_AMBIENTE_MS) return;
+  tAmbiente = millis();
+
+  // ---------- DHT22 ----------
+  TempAndHumidity th = dht.getTempAndHumidity();
+  if (dht.getStatus() == DHTesp::ERROR_NONE) {
+    temperatura = th.temperature;
+    umidade     = th.humidity;
+  }
+
+  if (!isnan(temperatura)) {
+    if (!alarmeTemp && temperatura >= TEMP_ALARME_C) {
+      alarmeTemp = true;
+      char msg[80];
+      snprintf(msg, sizeof(msg), "INCENDIO: temperatura de %.1f C", temperatura);
+      publicarAlerta(msg);
+      dispararZona24h("TEMP");
+    } else if (alarmeTemp && temperatura < TEMP_ALARME_C - HISTERESE_TEMP_C) {
+      alarmeTemp = false;
+      publicarEvento("TEMPERATURA_NORMAL", "DHT22", "Temperatura abaixo do limite de alarme");
+    }
+
+    if (!alertaTemp && temperatura >= TEMP_ALERTA_C) {
+      alertaTemp = true;
+      char msg[80];
+      snprintf(msg, sizeof(msg), "Temperatura elevada: %.1f C", temperatura);
+      publicarAlerta(msg);
+    } else if (alertaTemp && temperatura < TEMP_ALERTA_C - HISTERESE_TEMP_C) {
+      alertaTemp = false;
+    }
+  }
+
+  // ---------- MQ-2 ----------
+  gasPct = analogRead(PIN_GAS) * 100.0f / 4095.0f;
+
+  // Aquecimento: media da leitura em ar limpo vira a referencia,
+  // como na calibracao de um modulo MQ-2 real.
+  if (gasReferencia < 0) {
+    somaGasAquecimento += gasPct;
+    amostrasGas++;
+    if (millis() >= AQUECIMENTO_GAS_MS) {
+      gasReferencia = somaGasAquecimento / amostrasGas;
+      char msg[80];
+      snprintf(msg, sizeof(msg), "MQ-2 calibrado: referencia de %.1f%%", gasReferencia);
+      publicarEvento("GAS_CALIBRADO", "MQ-2", msg);
+    }
+    return;
+  }
+
+  float subida = gasPct - gasReferencia;
+
+  if (!alarmeGas && subida >= GAS_ALARME_PCT) {
+    alarmeGas = true;
+    char msg[80];
+    snprintf(msg, sizeof(msg), "GAS/FUMACA detectado: %.1f%%", gasPct);
+    publicarAlerta(msg);
+    dispararZona24h("GAS");
+  } else if (alarmeGas && subida < GAS_ALARME_PCT - HISTERESE_GAS_PCT) {
+    alarmeGas = false;
+    publicarEvento("GAS_NORMAL", "MQ-2", "Nivel de gas abaixo do limite de alarme");
+  }
+
+  if (!alertaGas && subida >= GAS_ALERTA_PCT) {
+    alertaGas = true;
+    char msg[80];
+    snprintf(msg, sizeof(msg), "Nivel de gas elevado: %.1f%%", gasPct);
+    publicarAlerta(msg);
+  } else if (alertaGas && subida < GAS_ALERTA_PCT - HISTERESE_GAS_PCT) {
+    alertaGas = false;
   }
 }
 
@@ -456,21 +575,41 @@ void processarSenha() {
     }
 
   } else {
-    tentativas++;
     senhaDigitada = "";
-
-    char msg[64];
-    snprintf(msg, sizeof(msg), "Senha incorreta (%u/%u)", tentativas, MAX_TENTATIVAS);
-    publicarEvento("SENHA_INCORRETA", "TECLADO", msg);
 
     // bipe curto de erro
     buzzerTom(400);
     tBuzzer = millis();
     buzzerLigado = true;
 
-    if (tentativas >= MAX_TENTATIVAS) {
-      mudarEstado(BLOQUEADO, "TECLADO");
-    }
+    registrarSenhaIncorreta("TECLADO");
+  }
+}
+
+// Conta erros do teclado e do dashboard no mesmo contador.
+void registrarSenhaIncorreta(const char *origem) {
+  tentativas++;
+
+  char msg[64];
+  snprintf(msg, sizeof(msg), "Senha incorreta (%u/%u)", tentativas, MAX_TENTATIVAS);
+  publicarEvento("SENHA_INCORRETA", origem, msg);
+
+  if (tentativas < MAX_TENTATIVAS) return;
+  tentativas = 0;
+
+  if (estado == BLOQUEADO) {
+    // erros remotos durante o bloqueio apenas reiniciam a contagem
+    tEstado = millis();
+    publicarAlerta("Novas senhas incorretas durante o bloqueio");
+  } else if (estado == ENTRANDO || estado == ALARME) {
+    // Quem invadiu e esta chutando a senha nao pode "pausar" o alarme
+    // com o bloqueio: dispara (ou mantem) a sirene na hora.
+    publicarAlerta("3 senhas incorretas durante a entrada - alarme imediato");
+    ultimaOrigemAlarme = "SENHA";
+    mudarEstado(ALARME, origem);
+  } else {
+    estadoAntesBloqueio = (estado == DESARMADO) ? DESARMADO : ARMADO;
+    mudarEstado(BLOQUEADO, origem);
   }
 }
 
@@ -558,8 +697,8 @@ void atualizarEstado() {
       if (decorrido >= TEMPO_BLOQUEIO_MS) {
         tentativas = 0;
         publicarEvento("DESBLOQUEIO", "TEMPORIZADOR", "Teclado liberado");
-        // volta ao estado anterior logico
-        mudarEstado(ARMADO, "TEMPORIZADOR");
+        // volta ao estado em que estava antes do bloqueio
+        mudarEstado(estadoAntesBloqueio, "TEMPORIZADOR");
       }
       break;
 
@@ -703,6 +842,9 @@ void setup() {
   // Sensores
   pinMode(PIN_PIR, INPUT);
   pinMode(PIN_PORTA, INPUT_PULLUP);
+  pinMode(PIN_GAS, INPUT);
+  analogReadResolution(12);
+  dht.setup(PIN_DHT, DHTesp::DHT22);
 
   // Atuadores
   pinMode(PIN_RELE, OUTPUT);
@@ -749,6 +891,7 @@ void loop() {
 
   // Logica do alarme
   lerSensores();
+  lerAmbiente();
   lerTeclado();
   atualizarEstado();
   atualizarSinalizacao();
@@ -758,6 +901,14 @@ void loop() {
   if (millis() - tTelemetria >= INTERVALO_TELEMETRIA_MS) {
     tTelemetria = millis();
     publicarTelemetria();
+    if (mqtt.connected()) {
+      if (!isnan(temperatura)) mqtt.publish(TOPIC_TEMPERATURA, String(temperatura, 1).c_str());
+      mqtt.publish(TOPIC_GAS, String(gasPct, 1).c_str());
+    }
+    Serial.printf("[SENSORES] estado=%s mov=%s porta=%s temp=%.1fC umid=%.1f%% gas=%.1f%% rssi=%d\n",
+                  nomeEstado(estado), movimentoDetectado ? "SIM" : "NAO",
+                  portaAberta ? "ABERTA" : "FECHADA", temperatura, umidade,
+                  gasPct, WiFi.RSSI());
   }
 
   // Heartbeat: o Node-RED usa isso para dizer se a central esta online

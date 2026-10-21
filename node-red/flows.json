@@ -306,8 +306,8 @@
     "type": "function",
     "z": "flowtab",
     "name": "Distribui telemetria",
-    "func": "\n// A telemetria chega como JSON a cada 5 s.\n// Guardamos o instante para o watchdog de comunicacao.\nlet d = msg.payload;\nif (typeof d === \"string\") { try { d = JSON.parse(d); } catch (e) { return null; } }\n\nflow.set(\"ultimaTelemetria\", Date.now());\nflow.set(\"telemetria\", d);\n\nconst movimento = { payload: d.movimento ? \"\\uD83D\\uDEB6 MOVIMENTO\" : \"\\u2713 Sem movimento\" };\nconst porta     = { payload: d.porta === \"ABERTA\" ? \"\\uD83D\\uDEAA ABERTA\" : \"\\uD83D\\uDD12 Fechada\" };\nconst rssi      = { payload: Number(d.rssi) || -100 };\nconst sirene    = { payload: d.sirene ? \"\\uD83D\\uDD0A LIGADA\" : \"Desligada\" };\nconst grafRssi  = { topic: \"RSSI (dBm)\", payload: Number(d.rssi) || -100 };\n\nreturn [movimento, porta, rssi, sirene, grafRssi];\n",
-    "outputs": 5,
+    "func": "\n// A telemetria chega como JSON a cada 5 s.\n// Guardamos o instante para o watchdog de comunicacao.\nlet d = msg.payload;\nif (typeof d === \"string\") { try { d = JSON.parse(d); } catch (e) { return null; } }\n\nflow.set(\"ultimaTelemetria\", Date.now());\nflow.set(\"telemetria\", d);\n\nconst movimento = { payload: d.movimento ? \"\\uD83D\\uDEB6 MOVIMENTO\" : \"\\u2713 Sem movimento\" };\nconst porta     = { payload: d.porta === \"ABERTA\" ? \"\\uD83D\\uDEAA ABERTA\" : \"\\uD83D\\uDD12 Fechada\" };\nconst rssi      = { payload: Number(d.rssi) || -100 };\nconst sirene    = { payload: d.sirene ? \"\\uD83D\\uDD0A LIGADA\" : \"Desligada\" };\nconst grafRssi  = { topic: \"RSSI (dBm)\", payload: Number(d.rssi) || -100 };\n\n// Zona 24 h: temperatura (DHT22) e gas/fumaca (MQ-2)\nconst temTemp = typeof d.temperatura === \"number\";\nconst temp    = temTemp ? { payload: d.temperatura } : null;\nconst gas     = { payload: Number(d.gas) || 0 };\nconst umid    = { payload: typeof d.umidade === \"number\" ? d.umidade.toFixed(1) + \" %\" : \"--\" };\nconst grafAmb = [ temTemp ? { topic: \"Temperatura (C)\", payload: d.temperatura } : null,\n                  { topic: \"Gas/fumaca (%)\", payload: Number(d.gas) || 0 } ];\n\nreturn [movimento, porta, rssi, sirene, grafRssi, temp, gas, umid, grafAmb];\n",
+    "outputs": 9,
     "timeout": 0,
     "noerr": 0,
     "initialize": "",
@@ -330,6 +330,18 @@
       ],
       [
         "chart_rssi"
+      ],
+      [
+        "gauge_temp"
+      ],
+      [
+        "gauge_gas"
+      ],
+      [
+        "txt_umid"
+      ],
+      [
+        "chart_amb"
       ]
     ]
   },
@@ -402,9 +414,9 @@
     "z": "flowtab",
     "name": "Sinal Wi-Fi",
     "group": "g_sensores",
-    "order": 4,
+    "order": 7,
     "width": "6",
-    "height": "4",
+    "height": "3",
     "gtype": "gage",
     "title": "Sinal Wi-Fi (dBm)",
     "label": "dBm",
@@ -430,7 +442,7 @@
     "z": "flowtab",
     "name": "Nivel de alerta",
     "group": "g_grafico",
-    "order": 1,
+    "order": 2,
     "width": "12",
     "height": "5",
     "label": "Nivel de alerta ao longo do tempo",
@@ -460,7 +472,7 @@
     "useDifferentColor": false,
     "className": "",
     "x": 800,
-    "y": 360,
+    "y": 520,
     "wires": [
       []
     ]
@@ -471,7 +483,7 @@
     "z": "flowtab",
     "name": "Qualidade do sinal",
     "group": "g_grafico",
-    "order": 2,
+    "order": 3,
     "width": "12",
     "height": "5",
     "label": "Qualidade do sinal Wi-Fi",
@@ -501,7 +513,125 @@
     "useDifferentColor": false,
     "className": "",
     "x": 800,
+    "y": 580,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "gauge_temp",
+    "type": "ui_gauge",
+    "z": "flowtab",
+    "name": "Temperatura",
+    "group": "g_sensores",
+    "order": 4,
+    "width": "3",
+    "height": "3",
+    "gtype": "gage",
+    "title": "Temperatura",
+    "label": "°C",
+    "format": "{{value | number:1}}",
+    "min": "0",
+    "max": "80",
+    "colors": [
+      "#2ecc71",
+      "#f39c12",
+      "#e74c3c"
+    ],
+    "seg1": "45",
+    "seg2": "57",
+    "diff": false,
+    "className": "",
+    "x": 780,
+    "y": 340,
+    "wires": []
+  },
+  {
+    "id": "gauge_gas",
+    "type": "ui_gauge",
+    "z": "flowtab",
+    "name": "Gas/Fumaca",
+    "group": "g_sensores",
+    "order": 5,
+    "width": "3",
+    "height": "3",
+    "gtype": "gage",
+    "title": "Gas / fumaca",
+    "label": "%",
+    "format": "{{value | number:1}}",
+    "min": "0",
+    "max": "100",
+    "colors": [
+      "#2ecc71",
+      "#f39c12",
+      "#e74c3c"
+    ],
+    "seg1": "30",
+    "seg2": "50",
+    "diff": false,
+    "className": "",
+    "x": 780,
+    "y": 380,
+    "wires": []
+  },
+  {
+    "id": "txt_umid",
+    "type": "ui_text",
+    "z": "flowtab",
+    "group": "g_sensores",
+    "order": 6,
+    "width": "6",
+    "height": "1",
+    "name": "Umidade",
+    "label": "Umidade",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": "",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#000000",
+    "x": 780,
     "y": 420,
+    "wires": []
+  },
+  {
+    "id": "chart_amb",
+    "type": "ui_chart",
+    "z": "flowtab",
+    "name": "Temperatura e gas",
+    "group": "g_grafico",
+    "order": 1,
+    "width": "12",
+    "height": "5",
+    "label": "Temperatura (C) e gas/fumaca (%)",
+    "chartType": "line",
+    "legend": "true",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "aguardando dados...",
+    "dot": false,
+    "ymin": "0",
+    "ymax": "100",
+    "removeOlder": "30",
+    "removeOlderPoints": "300",
+    "removeOlderUnit": "60",
+    "cutout": 0,
+    "useOneColor": false,
+    "useUTC": false,
+    "colors": [
+      "#e67e22",
+      "#9b59b6",
+      "#2ecc71",
+      "#f39c12",
+      "#3498db",
+      "#e74c3c"
+    ],
+    "outputs": 1,
+    "useDifferentColor": false,
+    "className": "",
+    "x": 780,
+    "y": 460,
     "wires": [
       []
     ]
@@ -520,7 +650,7 @@
     "rh": 0,
     "inputs": 0,
     "x": 130,
-    "y": 480,
+    "y": 640,
     "wires": [
       [
         "fn_alerta"
@@ -541,7 +671,7 @@
     "rh": 0,
     "inputs": 0,
     "x": 130,
-    "y": 540,
+    "y": 700,
     "wires": [
       [
         "fn_evento",
@@ -562,7 +692,7 @@
     "finalize": "",
     "libs": [],
     "x": 360,
-    "y": 480,
+    "y": 640,
     "wires": [
       [
         "toast_alerta"
@@ -585,7 +715,7 @@
     "finalize": "",
     "libs": [],
     "x": 360,
-    "y": 540,
+    "y": 700,
     "wires": [
       [
         "tpl_hist"
@@ -608,7 +738,7 @@
     "topic": "",
     "name": "Notificacao",
     "x": 800,
-    "y": 480,
+    "y": 640,
     "wires": []
   },
   {
@@ -627,7 +757,7 @@
     "templateScope": "local",
     "className": "",
     "x": 800,
-    "y": 540,
+    "y": 700,
     "wires": [
       []
     ]
@@ -646,7 +776,7 @@
     "rh": 0,
     "inputs": 0,
     "x": 130,
-    "y": 640,
+    "y": 800,
     "wires": [
       [
         "fn_conexao"
@@ -666,7 +796,7 @@
     "finalize": "",
     "libs": [],
     "x": 360,
-    "y": 640,
+    "y": 800,
     "wires": [
       []
     ]
@@ -689,7 +819,7 @@
     "payload": "",
     "payloadType": "date",
     "x": 130,
-    "y": 700,
+    "y": 860,
     "wires": [
       [
         "fn_watchdog"
@@ -709,7 +839,7 @@
     "finalize": "",
     "libs": [],
     "x": 360,
-    "y": 700,
+    "y": 860,
     "wires": [
       [
         "tpl_conexao"
@@ -735,7 +865,7 @@
     "templateScope": "local",
     "className": "",
     "x": 800,
-    "y": 700,
+    "y": 860,
     "wires": [
       []
     ]
@@ -753,7 +883,7 @@
     "finalize": "",
     "libs": [],
     "x": 360,
-    "y": 780,
+    "y": 940,
     "wires": [
       [
         "trigger30"
@@ -778,7 +908,7 @@
     "topic": "topic",
     "outputs": 1,
     "x": 580,
-    "y": 780,
+    "y": 940,
     "wires": [
       [
         "fn_escalona"
@@ -798,7 +928,7 @@
     "finalize": "",
     "libs": [],
     "x": 780,
-    "y": 780,
+    "y": 940,
     "wires": [
       [
         "toast_alerta"
@@ -826,7 +956,7 @@
     "topic": "fatec/seguranca/casa01/comando",
     "topicType": "str",
     "x": 130,
-    "y": 860,
+    "y": 1020,
     "wires": [
       [
         "mqtt_cmd"
@@ -854,7 +984,7 @@
     "topic": "fatec/seguranca/casa01/comando",
     "topicType": "str",
     "x": 130,
-    "y": 920,
+    "y": 1080,
     "wires": [
       [
         "mqtt_cmd"
@@ -882,7 +1012,7 @@
     "topic": "fatec/seguranca/casa01/comando",
     "topicType": "str",
     "x": 130,
-    "y": 980,
+    "y": 1140,
     "wires": [
       [
         "mqtt_cmd"
@@ -908,7 +1038,7 @@
     "className": "",
     "topicType": "str",
     "x": 130,
-    "y": 1040,
+    "y": 1200,
     "wires": [
       [
         "guarda_senha"
@@ -935,7 +1065,7 @@
     "to": "",
     "reg": false,
     "x": 360,
-    "y": 1040,
+    "y": 1200,
     "wires": [
       []
     ]
@@ -961,7 +1091,7 @@
     "topic": "",
     "topicType": "str",
     "x": 130,
-    "y": 1100,
+    "y": 1260,
     "wires": [
       [
         "fn_desarmar"
@@ -981,7 +1111,7 @@
     "finalize": "",
     "libs": [],
     "x": 380,
-    "y": 1100,
+    "y": 1260,
     "wires": [
       [
         "mqtt_cmd"
@@ -1003,7 +1133,7 @@
     "expiry": "",
     "broker": "broker1",
     "x": 640,
-    "y": 960,
+    "y": 1120,
     "wires": []
   },
   {
@@ -1020,7 +1150,7 @@
     "statusVal": "",
     "statusType": "auto",
     "x": 640,
-    "y": 540,
+    "y": 700,
     "wires": []
   }
 ]

@@ -15,6 +15,12 @@ PROJETO IoT - SISTEMA DE SEGURANCA
 - Sensor magnetico (reed switch): deteccao de abertura de
   porta/janela.
 
+- Sensor de temperatura e umidade (DHT22): deteccao de calor
+  excessivo (incendio).
+
+- Sensor de gas/fumaca (MQ-2): deteccao de vazamento de gas e
+  fumaca.
+
 - Teclado matricial 4x4: digitacao de senha para armar/desarmar.
 
 - Buzzer piezoeletrico: alarme sonoro local.
@@ -69,6 +75,10 @@ complemento a senha.
 - Se houver 3 tentativas de senha incorretas, o sistema entra em
   bloqueio temporario e gera um alerta de tentativa de invasao.
 
+- Se a temperatura passar de 57 C ou o nivel de gas/fumaca subir
+  acima do limite, o alarme dispara em qualquer estado (zona 24 h),
+  mesmo com o sistema desarmado.
+
 - Se o ESP32 ficar sem comunicacao MQTT, o dashboard marca o
   dispositivo como offline e gera um alerta.
 
@@ -98,10 +108,11 @@ de R$ 15,00. O reed switch fica em torno de R$ 8,00. O teclado
 R$ 5,00. O modulo rele fica em torno de R$ 12,00. O LED RGB custa
 aproximadamente R$ 3,00. O display LCD I2C 16x2 custa cerca de
 R$ 25,00. A protoboard, os jumpers e a fonte somam
-aproximadamente R$ 40,00.
+aproximadamente R$ 40,00. O sensor DHT22 custa cerca de R$ 25,00
+e o modulo MQ-2 em torno de R$ 12,00.
 
 O valor total estimado para um prototipo unico fica em torno de
-R$ 163,00.
+R$ 200,00.
 
 Caso o prototipo fosse transformado em um produto real (fora do
 ambiente de simulacao), seria necessario somar um gabinete

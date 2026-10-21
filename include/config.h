@@ -28,6 +28,8 @@
 #define TOPIC_STATUS       TOPIC_BASE "/status"       // armado/desarmado/alarme (retained)
 #define TOPIC_MOVIMENTO    TOPIC_BASE "/sensor/movimento"
 #define TOPIC_PORTA        TOPIC_BASE "/sensor/porta"
+#define TOPIC_TEMPERATURA  TOPIC_BASE "/sensor/temperatura"  // graus C
+#define TOPIC_GAS          TOPIC_BASE "/sensor/gas"          // % (0-100)
 #define TOPIC_ALERTA       TOPIC_BASE "/alerta"
 #define TOPIC_EVENTO       TOPIC_BASE "/evento"       // log em JSON
 #define TOPIC_TELEMETRIA   TOPIC_BASE "/telemetria"   // uptime, rssi, estado
@@ -38,6 +40,8 @@
 // Sensores
 #define PIN_PIR            13    // sensor de movimento HC-SR501
 #define PIN_PORTA          14    // reed switch / chave da porta (INPUT_PULLUP)
+#define PIN_DHT            23    // DHT22 - temperatura e umidade
+#define PIN_GAS            34    // MQ-2 (gas/fumaca) saida analogica AOUT - ADC1
 
 // Atuadores
 #define PIN_BUZZER         12    // buzzer piezoeletrico
@@ -74,6 +78,17 @@
 #define DELAY_SAIDA_MS     15000UL    // 15 s para sair depois de armar
 #define DELAY_ENTRADA_MS   10000UL    // 10 s para digitar a senha ao entrar
 #define DURACAO_SIRENE_MS  60000UL    // sirene toca no maximo 60 s
+
+// ---------- Zona 24 h: incendio / vazamento de gas ----------
+// Disparam o alarme em QUALQUER estado, mesmo desarmado.
+#define TEMP_ALERTA_C       45.0f     // pre-alerta de temperatura
+#define TEMP_ALARME_C       57.0f     // alarme de incendio (detector termico)
+#define GAS_ALERTA_PCT      20.0f     // pre-alerta: subida acima da referencia
+#define GAS_ALARME_PCT      35.0f     // alarme: subida acima da referencia
+#define HISTERESE_TEMP_C    3.0f      // evita alarmes repetidos na fronteira
+#define HISTERESE_GAS_PCT   5.0f
+#define AQUECIMENTO_GAS_MS  10000UL   // MQ-2 precisa aquecer; mede a referencia
+#define INTERVALO_AMBIENTE_MS    2000UL   // DHT22 aceita 1 leitura a cada 2 s
 
 // ---------- Temporizacoes internas ----------
 #define INTERVALO_TELEMETRIA_MS  5000UL   // envia telemetria a cada 5 s
