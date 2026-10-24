@@ -1,0 +1,72 @@
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:4640
+load:0x40078000,len:15632
+load:0x40080400,len:3164
+entry 0x4008059c
+
+=== Sistema de Seguranca IoT - iniciando ===
+[WiFi] Conectando a Wokwi-GUEST
+.......
+[WiFi] Conectado. IP: 10.10.0.2
+[MQTT] Conectando ao broker... conectado!
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"BOOT","origem":"SISTEMA","estado":"DESARMADO","descricao":"Central conectada ao broker MQTT","uptime_s":6}
+=== Pronto. Estado inicial: DESARMADO ===
+[SENSORES] estado=DESARMADO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-95
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"GAS_CALIBRADO","origem":"MQ-2","estado":"DESARMADO","descricao":"MQ-2 calibrado: referencia de 0.0%","uptime_s":10}
+[SENSORES] estado=DESARMADO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-88
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ARMANDO","origem":"TECLADO","estado":"SAINDO","descricao":"Delay de saida iniciado","uptime_s":12}
+[SENSORES] estado=SAINDO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-97
+[SENSORES] estado=SAINDO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-84
+[SENSORES] estado=SAINDO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-82
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ARMADO","origem":"TEMPORIZADOR","estado":"ARMADO","descricao":"Vigilancia ativa","uptime_s":27}
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ENTRADA_DETECTADA","origem":"PIR","estado":"ENTRANDO","descricao":"Violacao detectada, aguardando senha","uptime_s":30}
+[ALERTA] Entrada detectada - aguardando desarme
+[SENSORES] estado=ENTRANDO mov=SIM porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-84
+[SENSORES] estado=ENTRANDO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-71
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ALARME","origem":"TEMPORIZADOR","estado":"ALARME","descricao":"ALARME DISPARADO","uptime_s":40}
+[ALERTA] ALARME DISPARADO - origem: PIR
+[SENSORES] estado=ALARME mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-84
+[MQTT] fatec/seguranca/casa01/comando -> SILENCIAR
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"SIRENE_SILENCIADA","origem":"DASHBOARD","estado":"ALARME","descricao":"Sirene silenciada pelo operador; alarme continua ativo","uptime_s":43}
+[MQTT] fatec/seguranca/casa01/comando -> DESARMAR:1234
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"DESARMADO","origem":"DASHBOARD","estado":"DESARMADO","descricao":"Sistema desarmado","uptime_s":46}
+[SENSORES] estado=DESARMADO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-78
+[SENSORES] estado=DESARMADO mov=NAO porta=ABERTA temp=24.0C umid=40.0% gas=0.0% rssi=-78
+[ALERTA] Temperatura elevada: 46.0 C
+[SENSORES] estado=DESARMADO mov=NAO porta=FECHADA temp=46.0C umid=40.0% gas=0.0% rssi=-96
+[ALERTA] INCENDIO: temperatura de 60.0 C
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ALARME","origem":"TEMP","estado":"ALARME","descricao":"ALARME DISPARADO","uptime_s":58}
+[ALERTA] ALARME DISPARADO - origem: TEMP
+[SENSORES] estado=ALARME mov=NAO porta=FECHADA temp=60.0C umid=40.0% gas=0.0% rssi=-79
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"TEMPERATURA_NORMAL","origem":"DHT22","estado":"ALARME","descricao":"Temperatura abaixo do limite de alarme","uptime_s":62}
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"DESARMADO","origem":"TECLADO","estado":"DESARMADO","descricao":"Sistema desarmado","uptime_s":64}
+[ALERTA] Nivel de gas elevado: 25.4%
+[SENSORES] estado=DESARMADO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=25.4% rssi=-76
+[ALERTA] GAS/FUMACA detectado: 50.8%
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ALARME","origem":"GAS","estado":"ALARME","descricao":"ALARME DISPARADO","uptime_s":68}
+[ALERTA] ALARME DISPARADO - origem: GAS
+[MQTT] fatec/seguranca/casa01/comando -> DESARMAR:1234
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"DESARMADO","origem":"DASHBOARD","estado":"DESARMADO","descricao":"Sistema desarmado","uptime_s":71}
+[SENSORES] estado=DESARMADO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=50.8% rssi=-66
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"GAS_NORMAL","origem":"MQ-2","estado":"DESARMADO","descricao":"Nivel de gas abaixo do limite de alarme","uptime_s":72}
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"SENHA_INCORRETA","origem":"TECLADO","estado":"DESARMADO","descricao":"Senha incorreta (1/3)","uptime_s":75}
+[SENSORES] estado=DESARMADO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-60
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"SENHA_INCORRETA","origem":"TECLADO","estado":"DESARMADO","descricao":"Senha incorreta (2/3)","uptime_s":78}
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"SENHA_INCORRETA","origem":"TECLADO","estado":"DESARMADO","descricao":"Senha incorreta (3/3)","uptime_s":81}
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"BLOQUEIO","origem":"TECLADO","estado":"BLOQUEADO","descricao":"Teclado bloqueado por excesso de tentativas","uptime_s":81}
+[ALERTA] Teclado bloqueado: possivel tentativa de invasao
+[SENSORES] estado=BLOQUEADO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-74
+[MQTT] fatec/seguranca/casa01/comando -> PANICO
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ALARME","origem":"DASHBOARD","estado":"ALARME","descricao":"ALARME DISPARADO","uptime_s":84}
+[ALERTA] ALARME DISPARADO - origem: PANICO
+[ALERTA] BOTAO DE PANICO acionado pelo dashboard
+[SENSORES] estado=ALARME mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-91
+[SENSORES] estado=ALARME mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-90
+[SENSORES] estado=ALARME mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-89
+[MQTT] fatec/seguranca/casa01/comando -> DESARMAR:1234
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"DESARMADO","origem":"DASHBOARD","estado":"DESARMADO","descricao":"Sistema desarmado","uptime_s":98}

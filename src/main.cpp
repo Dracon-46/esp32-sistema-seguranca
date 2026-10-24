@@ -319,8 +319,7 @@ void publicarEstado() {
 }
 
 void publicarEvento(const char *tipo, const char *origem, const char *descricao) {
-  if (!mqtt.connected()) return;
-
+  // o log sai sempre no Monitor Serial; o MQTT so recebe se estiver conectado
   JsonDocument doc;
   doc["dispositivo"] = DEVICE_ID;
   doc["local"]       = LOCAL_INSTALACAO;
@@ -332,14 +331,13 @@ void publicarEvento(const char *tipo, const char *origem, const char *descricao)
 
   char buffer[320];
   serializeJson(doc, buffer, sizeof(buffer));
-  mqtt.publish(TOPIC_EVENTO, buffer);
+  if (mqtt.connected()) mqtt.publish(TOPIC_EVENTO, buffer);
 
   Serial.printf("[EVENTO] %s\n", buffer);
 }
 
 void publicarAlerta(const char *mensagem) {
-  if (!mqtt.connected()) return;
-  mqtt.publish(TOPIC_ALERTA, mensagem);
+  if (mqtt.connected()) mqtt.publish(TOPIC_ALERTA, mensagem);
   Serial.printf("[ALERTA] %s\n", mensagem);
 }
 
@@ -870,6 +868,7 @@ void setup() {
   mqtt.setServer(MQTT_BROKER, MQTT_PORT);
   mqtt.setCallback(aoReceberMensagem);
   mqtt.setBufferSize(512);
+  mqtt.setKeepAlive(60);   // folga para o simulador, que roda mais lento que o tempo real
   conectarMqtt();
 
   tEstado = millis();

@@ -7,112 +7,158 @@
       "type": "board-esp32-devkit-v1",
       "id": "esp",
       "top": 0,
-      "left": 0,
+      "left": 110,
       "attrs": {}
     },
     {
       "type": "wokwi-pir-motion-sensor",
       "id": "pir",
-      "top": -140,
-      "left": -230,
+      "top": -170,
+      "left": -200,
       "attrs": {}
     },
     {
       "type": "wokwi-slide-switch",
       "id": "porta",
-      "top": -40,
-      "left": -230,
+      "top": -35,
+      "left": -170,
       "attrs": {}
     },
     {
       "type": "wokwi-membrane-keypad",
       "id": "kp",
-      "top": 120,
-      "left": 160,
+      "top": -45,
+      "left": 280,
       "attrs": {}
     },
     {
       "type": "wokwi-lcd1602",
       "id": "lcd",
-      "top": -180,
-      "left": 160,
+      "top": -210,
+      "left": 260,
       "attrs": { "pins": "i2c", "background": "green" }
     },
     {
       "type": "wokwi-buzzer",
       "id": "bz",
-      "top": 80,
-      "left": -230,
+      "top": 60,
+      "left": -210,
       "attrs": { "volume": "0.1" }
     },
     {
       "type": "wokwi-rgb-led",
       "id": "rgb",
-      "top": 200,
-      "left": -130,
+      "top": 75,
+      "left": -5,
       "attrs": { "common": "cathode" }
     },
     {
       "type": "wokwi-resistor",
       "id": "r_red",
-      "top": 200,
-      "left": -230,
+      "top": 80,
+      "left": -95,
       "attrs": { "value": "220" }
     },
     {
       "type": "wokwi-resistor",
       "id": "r_green",
-      "top": 240,
-      "left": -230,
+      "top": 105,
+      "left": -95,
       "attrs": { "value": "220" }
     },
     {
       "type": "wokwi-resistor",
       "id": "r_blue",
-      "top": 280,
-      "left": -230,
+      "top": 130,
+      "left": -95,
       "attrs": { "value": "220" }
     },
     {
       "type": "wokwi-led",
       "id": "led_sirene",
-      "top": 330,
-      "left": -130,
+      "top": 170,
+      "left": -5,
       "attrs": { "color": "red", "label": "SIRENE (rele)" }
     },
     {
       "type": "wokwi-resistor",
       "id": "r_sirene",
-      "top": 330,
-      "left": -230,
+      "top": 195,
+      "left": -95,
       "attrs": { "value": "220" }
     },
     {
       "type": "wokwi-dht22",
       "id": "dht",
-      "top": -150,
-      "left": -360,
+      "top": -190,
+      "left": -75,
       "attrs": { "temperature": "24", "humidity": "40" }
     },
     {
-      "type": "wokwi-gas-sensor",
+      "type": "wokwi-potentiometer",
       "id": "gas",
-      "top": 30,
-      "left": -420,
-      "attrs": { "ppm": "400" }
+      "top": -50,
+      "left": -95,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t_pir",
+      "top": -190,
+      "left": -200,
+      "attrs": { "text": "PIR (presenca)" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t_dht",
+      "top": -210,
+      "left": -75,
+      "attrs": { "text": "DHT22" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t_porta",
+      "top": -55,
+      "left": -175,
+      "attrs": { "text": "Porta" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t_gas",
+      "top": -70,
+      "left": -95,
+      "attrs": { "text": "MQ-2 (gas)" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t_bz",
+      "top": 40,
+      "left": -210,
+      "attrs": { "text": "Buzzer" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t_rgb",
+      "top": 55,
+      "left": -5,
+      "attrs": { "text": "Status" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t_sir",
+      "top": 150,
+      "left": -20,
+      "attrs": { "text": "Sirene (rele)" }
     }
   ],
   "connections": [
     [ "pir:VCC", "esp:3V3", "red", [] ],
     [ "pir:GND", "esp:GND.1", "black", [] ],
     [ "pir:OUT", "esp:D13", "green", [] ],
-
     [ "porta:2", "esp:D14", "green", [] ],
     [ "porta:1", "esp:GND.2", "black", [] ],
-
     [ "bz:1", "esp:GND.2", "black", [] ],
     [ "bz:2", "esp:D12", "purple", [] ],
-
     [ "esp:D25", "r_red:1", "red", [] ],
     [ "r_red:2", "rgb:R", "red", [] ],
     [ "esp:D26", "r_green:1", "green", [] ],
@@ -120,16 +166,13 @@
     [ "esp:D33", "r_blue:1", "blue", [] ],
     [ "r_blue:2", "rgb:B", "blue", [] ],
     [ "rgb:COM", "esp:GND.1", "black", [] ],
-
     [ "esp:D27", "r_sirene:1", "orange", [] ],
     [ "r_sirene:2", "led_sirene:A", "orange", [] ],
     [ "led_sirene:C", "esp:GND.1", "black", [] ],
-
     [ "lcd:VCC", "esp:3V3", "red", [] ],
     [ "lcd:GND", "esp:GND.2", "black", [] ],
     [ "lcd:SDA", "esp:D21", "cyan", [] ],
     [ "lcd:SCL", "esp:D22", "magenta", [] ],
-
     [ "kp:R1", "esp:D19", "yellow", [] ],
     [ "kp:R2", "esp:D18", "yellow", [] ],
     [ "kp:R3", "esp:D5", "yellow", [] ],
@@ -138,14 +181,12 @@
     [ "kp:C2", "esp:D4", "white", [] ],
     [ "kp:C3", "esp:D2", "white", [] ],
     [ "kp:C4", "esp:D15", "white", [] ],
-
     [ "dht:VCC", "esp:3V3", "red", [] ],
     [ "dht:GND", "esp:GND.1", "black", [] ],
     [ "dht:SDA", "esp:D23", "green", [] ],
-
     [ "gas:VCC", "esp:3V3", "red", [] ],
     [ "gas:GND", "esp:GND.1", "black", [] ],
-    [ "gas:AOUT", "esp:D34", "orange", [] ]
+    [ "gas:SIG", "esp:D34", "orange", [] ]
   ],
   "dependencies": {}
 }

@@ -7,7 +7,7 @@
 | Percepção | PIR, reed switch, DHT22, MQ-2, teclado 4x4 | Capturar eventos físicos do ambiente |
 | Controle | ESP32 (máquina de estados) | Decidir localmente quando disparar o alarme |
 | Atuação | Relé, buzzer, LED RGB, LCD | Reagir fisicamente e informar quem está no local |
-| Comunicação | Wi-Fi + MQTT (HiveMQ) | Transportar estado, telemetria e comandos |
+| Comunicação | Wi-Fi + MQTT (shiftr.io) | Transportar estado, telemetria e comandos |
 | Processamento | Node-RED | Aplicar regras, manter histórico e watchdog |
 | Apresentação | Node-RED Dashboard | Exibir e permitir comandar remotamente |
 

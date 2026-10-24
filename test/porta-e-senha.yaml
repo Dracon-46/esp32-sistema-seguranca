@@ -1,0 +1,22 @@
+# Cenario Wokwi CLI: porta aberta com o sistema armado e 3 senhas erradas na entrada.
+# Os comandos ARMAR / DESARMAR chegam por MQTT (dashboard ou test/comandos-mqtt.js).
+name: Porta armada e senhas erradas na entrada
+version: 1
+steps:
+  - wait-serial: 'Vigilancia ativa'
+  - set-control:
+      part-id: porta
+      name: value
+      value: 1
+  - wait-serial: 'ALARME DISPARADO - origem: PORTA'
+  - set-control:
+      part-id: porta
+      name: value
+      value: 0
+  - wait-serial: 'Vigilancia ativa'
+  - set-control:
+      part-id: porta
+      name: value
+      value: 1
+  - wait-serial: '3 senhas incorretas durante a entrada'
+  - wait-serial: 'ALARME DISPARADO - origem: SENHA'

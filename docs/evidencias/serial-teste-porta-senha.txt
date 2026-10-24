@@ -1,0 +1,44 @@
+
+
+=== Sistema de Seguranca IoT - iniciando ===
+[WiFi] Conectando a Wokwi-GUEST
+.....
+[WiFi] Conectado. IP: 10.13.37.2
+[MQTT] Conectando ao broker... conectado!
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"BOOT","origem":"SISTEMA","estado":"DESARMADO","descricao":"Central conectada ao broker MQTT","uptime_s":5}
+=== Pronto. Estado inicial: DESARMADO ===
+[SENSORES] estado=DESARMADO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-81
+[MQTT] fatec/seguranca/casa01/comando -> ARMAR
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ARMANDO","origem":"DASHBOARD","estado":"SAINDO","descricao":"Delay de saida iniciado","uptime_s":5}
+[SENSORES] estado=SAINDO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-89
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"GAS_CALIBRADO","origem":"MQ-2","estado":"SAINDO","descricao":"MQ-2 calibrado: referencia de 0.0%","uptime_s":11}
+[SENSORES] estado=SAINDO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-97
+[SENSORES] estado=SAINDO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-83
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ARMADO","origem":"TEMPORIZADOR","estado":"ARMADO","descricao":"Vigilancia ativa","uptime_s":20}
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ENTRADA_DETECTADA","origem":"PORTA","estado":"ENTRANDO","descricao":"Violacao detectada, aguardando senha","uptime_s":20}
+[ALERTA] Entrada detectada - aguardando desarme
+[SENSORES] estado=ENTRANDO mov=NAO porta=ABERTA temp=24.0C umid=40.0% gas=0.0% rssi=-95
+[SENSORES] estado=ENTRANDO mov=NAO porta=ABERTA temp=24.0C umid=40.0% gas=0.0% rssi=-97
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ALARME","origem":"TEMPORIZADOR","estado":"ALARME","descricao":"ALARME DISPARADO","uptime_s":30}
+[ALERTA] ALARME DISPARADO - origem: PORTA[MQTT] fatec/seguranca/casa01/comando -> DESARMAR:1234
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"DESARMADO","origem":"DASHBOARD","estado":"DESARMADO","descricao":"Sistema desarmado","uptime_s":31}
+[MQTT] fatec/seguranca/casa01/comando -> ARMAR
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ARMANDO","origem":"DASHBOARD","estado":"SAINDO","descricao":"Delay de saida iniciado","uptime_s":32}
+[SENSORES] estado=SAINDO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-96
+[SENSORES] estado=SAINDO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-97
+[SENSORES] estado=SAINDO mov=NAO porta=FECHADA temp=24.0C umid=40.0% gas=0.0% rssi=-91
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ARMADO","origem":"TEMPORIZADOR","estado":"ARMADO","descricao":"Vigilancia ativa","uptime_s":47}
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ENTRADA_DETECTADA","origem":"PORTA","estado":"ENTRANDO","descricao":"Violacao detectada, aguardando senha","uptime_s":47}
+[ALERTA] Entrada detectada - aguardando desarme
+[MQTT] fatec/seguranca/casa01/comando -> DESARMAR:0000
+[ALERTA] Tentativa de desarme remoto com senha incorreta
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"SENHA_INCORRETA","origem":"DASHBOARD","estado":"ENTRANDO","descricao":"Senha incorreta (1/3)","uptime_s":47}
+[MQTT] fatec/seguranca/casa01/comando -> DESARMAR:1111
+[ALERTA] Tentativa de desarme remoto com senha incorreta
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"SENHA_INCORRETA","origem":"DASHBOARD","estado":"ENTRANDO","descricao":"Senha incorreta (2/3)","uptime_s":47}
+[MQTT] fatec/seguranca/casa01/comando -> DESARMAR:2222
+[ALERTA] Tentativa de desarme remoto com senha incorreta
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"SENHA_INCORRETA","origem":"DASHBOARD","estado":"ENTRANDO","descricao":"Senha incorreta (3/3)","uptime_s":47}
+[ALERTA] 3 senhas incorretas durante a entrada - alarme imediato
+[EVENTO] {"dispositivo":"esp32-seguranca-01","local":"Residencia - Sala","tipo":"ALARME","origem":"DASHBOARD","estado":"ALARME","descricao":"ALARME DISPARADO","uptime_s":47}
+[ALERTA] ALARME DISPARADO - origem: SENHA
