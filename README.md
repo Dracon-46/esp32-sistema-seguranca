@@ -157,6 +157,8 @@ Os logs do Monitor Serial dos testes estão em `docs/evidencias/`.
 
 ## Como executar
 
+**Projeto no Wokwi:** https://wokwi.com/projects/478725460238901249
+
 ### 1. Simulação (Wokwi + PlatformIO)
 
 ```bash
@@ -168,6 +170,8 @@ pio run
 ```
 
 No Wokwi use obrigatoriamente a rede `Wokwi-GUEST` com senha vazia — já está configurado em `include/config.h`.
+
+Para o editor web do Wokwi, `wokwi-web/sketch.ino` traz `src/main.cpp` e `include/config.h` num arquivo só, e `wokwi-web/libraries.txt` lista as bibliotecas. Se mudar o firmware, gere o arquivo de novo antes de colar no site.
 
 ### 2. Node-RED
 

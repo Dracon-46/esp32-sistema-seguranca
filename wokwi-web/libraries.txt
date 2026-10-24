@@ -1,0 +1,5 @@
+PubSubClient
+Keypad
+LiquidCrystal I2C
+ArduinoJson
+DHT sensor library for ESPx
