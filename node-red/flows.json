@@ -2,8 +2,8 @@
   {
     "id": "broker1",
     "type": "mqtt-broker",
-    "name": "HiveMQ Publico",
-    "broker": "broker.hivemq.com",
+    "name": "shiftr.io Publico",
+    "broker": "public.cloud.shiftr.io",
     "port": "1883",
     "clientid": "",
     "autoConnect": true,
@@ -20,7 +20,11 @@
     "willTopic": "",
     "willQos": "0",
     "willPayload": "",
-    "sessionExpiry": ""
+    "sessionExpiry": "",
+    "credentials": {
+      "user": "public",
+      "password": "public"
+    }
   },
   {
     "id": "uibase",
@@ -188,7 +192,7 @@
     "type": "tab",
     "label": "Sistema de Seguranca",
     "disabled": false,
-    "info": "Fluxo do projeto IoT - Sistema de Seguranca Residencial\nESP32 -> MQTT (HiveMQ) -> Node-RED -> Dashboard"
+    "info": "Fluxo do projeto IoT - Sistema de Seguranca Residencial\nESP32 -> MQTT (shiftr.io) -> Node-RED -> Dashboard"
   },
   {
     "id": "in_status",

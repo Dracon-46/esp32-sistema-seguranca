@@ -34,7 +34,7 @@ Construir uma central de alarme conectada, de baixo custo, que:
   DHT22 (D23) ---->|
   MQ-2  (D34) ---->|
   Teclado 4x4 ---->|--->|   ESP32   |=====>  porta 1883 =====>|   Broker   |<====>| Node-RED|
-                   |    | Maquina de|        Wi-Fi           |  HiveMQ    |       |  (flow) |
+                   |    | Maquina de|        Wi-Fi           |  shiftr.io |       |  (flow) |
   ATUADORES        |    |  estados  |                        +------------+       +----+----+
   Buzzer (D12) <---|    +-----------+                                                  |
   Rele   (D27) <---|          |                                                        v
@@ -56,14 +56,14 @@ Construir uma central de alarme conectada, de baixo custo, que:
 | Sensor de presença | PIR HC-SR501 | D13 | Detecta movimento no ambiente |
 | Sensor de abertura | Reed switch | D14 (`INPUT_PULLUP`) | Detecta porta/janela aberta |
 | Sensor de temperatura | DHT22 | D23 | Temperatura e umidade (detector térmico de incêndio) |
-| Sensor de gás/fumaça | MQ-2 | D34 (ADC1, saída AOUT) | Vazamento de gás e fumaça |
+| Sensor de gás/fumaça | MQ-2 (no Wokwi: potenciômetro) | D34 (ADC1, saída analógica) | Vazamento de gás e fumaça |
 | Teclado | Membrana 4x4 | D19, D18, D5, TX2, RX2, D4, D2, D15 | Senha de armar/desarmar |
 | Buzzer | Piezoelétrico | D12 (LEDC/PWM) | Alarme sonoro local e bipes |
 | Sirene | Módulo relé 5 V | D27 | Aciona a sirene externa |
 | LED RGB | Cátodo comum | D25 / D26 / D33 | Status visual do sistema |
 | Display | LCD 16x2 I2C (0x27) | D21 (SDA) / D22 (SCL) | Interface local |
 
-> No Wokwi o **reed switch** é representado por uma chave deslizante e o **relé** por um LED vermelho rotulado `SIRENE`, já que a plataforma não simula a carga externa. O MQ-2 é alimentado em 3V3 para que a saída analógica nunca passe da faixa do ADC do ESP32; o nível de gás é ajustado no slider `ppm` do sensor durante a simulação, e a temperatura no slider do DHT22.
+> No Wokwi o **reed switch** é representado por uma chave deslizante e o **relé** por um LED vermelho rotulado `SIRENE`, já que a plataforma não simula a carga externa. O **MQ-2** é representado por um potenciômetro ligado no mesmo pino analógico: testado no Wokwi, o modelo `wokwi-gas-sensor` não altera a saída quando o `ppm` muda, então não serviria para demonstrar o alarme de gás. Girar o potenciômetro equivale a aumentar a concentração de gás; no hardware real basta ligar a saída AOUT do MQ-2 (alimentado em 3,3 V) no D34. A temperatura é ajustada no slider do DHT22.
 
 ---
 
@@ -135,6 +135,26 @@ O dashboard (Node-RED Dashboard, em `/ui`) entrega os seis itens exigidos:
 
 ---
 
+## Vídeo da demonstração
+
+[`docs/video/sistema-seguranca-iot-demo.mp4`](docs/video/sistema-seguranca-iot-demo.mp4) (3 min 34 s): compilação no PlatformIO, fluxo do Node-RED e o sistema rodando ao vivo no Wokwi com o dashboard e as mensagens MQTT lado a lado: boot, armar pelo teclado, invasão pelo PIR, alarme, silenciar e desarmar pelo dashboard, porta, incêndio (DHT22), gás (MQ-2), bloqueio por senha, pânico, escalonamento e queda de comunicação (OFFLINE).
+
+![Circuito no Wokwi](docs/img/wokwi-circuito.png)
+
+## Testes automatizados (Wokwi CLI)
+
+`test/porta-e-senha.yaml` testa a porta aberta com o sistema armado e as 3 senhas erradas durante a entrada. Os comandos chegam por MQTT pelo script `test/comandos-mqtt.js`, que faz o papel do dashboard:
+
+```bash
+pio run
+node test/comandos-mqtt.js &          # precisa do pacote mqtt (npm i mqtt)
+wokwi-cli --scenario test/porta-e-senha.yaml --timeout 290000 .
+```
+
+Os logs do Monitor Serial dos testes estão em `docs/evidencias/`.
+
+---
+
 ## Como executar
 
 ### 1. Simulação (Wokwi + PlatformIO)
@@ -162,16 +182,16 @@ Acesse o painel em `http://localhost:1880/ui`.
 
 ### 3. Broker MQTT
 
-O projeto usa o broker público `broker.hivemq.com:1883`. Para trocar por um Mosquitto local, altere `MQTT_BROKER` em `include/config.h` e o nó `HiveMQ Publico` no Node-RED.
+O projeto usa a instância pública do shiftr.io (`public.cloud.shiftr.io:1883`, usuário `public`, senha `public`), que também aceita WebSocket seguro na porta 443 (`wss://public.cloud.shiftr.io`) para redes que bloqueiam a 1883. O usuário/senha já vêm no `flows.json`. Para trocar por um Mosquitto local, altere `MQTT_BROKER`/`MQTT_USER`/`MQTT_PASS` em `include/config.h` e o nó `HiveMQ Publico` no Node-RED.
 
 ### 4. Testando pelo terminal
 
 ```bash
 # acompanhar tudo que o dispositivo publica
-mosquitto_sub -h broker.hivemq.com -t 'fatec/seguranca/casa01/#' -v
+mosquitto_sub -h public.cloud.shiftr.io -u public -P public -t 'fatec/seguranca/casa01/#' -v
 
 # armar o sistema remotamente
-mosquitto_pub -h broker.hivemq.com -t 'fatec/seguranca/casa01/comando' -m 'ARMAR'
+mosquitto_pub -h public.cloud.shiftr.io -u public -P public -t 'fatec/seguranca/casa01/comando' -m 'ARMAR'
 ```
 
 ---
@@ -201,12 +221,17 @@ mosquitto_pub -h broker.hivemq.com -t 'fatec/seguranca/casa01/comando' -m 'ARMAR
 │   └── main.cpp            Firmware: máquina de estados e MQTT
 ├── node-red/
 │   └── flows.json          Fluxo e dashboard prontos para importar
+├── test/
+│   ├── porta-e-senha.yaml  Cenário de teste do Wokwi CLI
+│   └── comandos-mqtt.js    Envia os comandos MQTT durante o cenário
 └── docs/
     ├── 01-definicao-requisitos.txt
     ├── 02-arquitetura.md
     ├── 03-eventos.md
     ├── Roteiro_Projeto_IoT_Sistema_Seguranca.docx   Roteiro da atividade preenchido
-    └── img/                Prints do fluxo Node-RED e do dashboard
+    ├── img/                Prints do Wokwi, Node-RED, dashboard e MQTT
+    ├── video/              Vídeo da demonstração
+    └── evidencias/         Logs do Monitor Serial dos testes
 ```
 
 ---

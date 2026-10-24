@@ -17,10 +17,10 @@
 #define WIFI_CHANNEL       6          // acelera a conexao no Wokwi
 
 // ---------- Broker MQTT ----------
-#define MQTT_BROKER        "broker.hivemq.com"
+#define MQTT_BROKER        "public.cloud.shiftr.io"
 #define MQTT_PORT          1883
-#define MQTT_USER          ""         // vazio = broker publico sem autenticacao
-#define MQTT_PASS          ""
+#define MQTT_USER          "public"   // instancia publica do shiftr.io
+#define MQTT_PASS          "public"
 
 // ---------- Topicos MQTT ----------
 #define TOPIC_BASE         "fatec/seguranca/casa01"
