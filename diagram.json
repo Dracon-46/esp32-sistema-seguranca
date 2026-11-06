@@ -180,7 +180,7 @@
     [ "kp:C1", "esp:RX2", "white", [] ],
     [ "kp:C2", "esp:D4", "white", [] ],
     [ "kp:C3", "esp:D2", "white", [] ],
-    [ "kp:C4", "esp:D15", "white", [] ],
+    [ "kp:C4", "esp:D32", "white", [] ],
     [ "dht:VCC", "esp:3V3", "red", [] ],
     [ "dht:GND", "esp:GND.1", "black", [] ],
     [ "dht:SDA", "esp:D23", "green", [] ],

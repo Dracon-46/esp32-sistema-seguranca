@@ -57,7 +57,7 @@ Construir uma central de alarme conectada, de baixo custo, que:
 | Sensor de abertura | Reed switch | D14 (`INPUT_PULLUP`) | Detecta porta/janela aberta |
 | Sensor de temperatura | DHT22 | D23 | Temperatura e umidade (detector térmico de incêndio) |
 | Sensor de gás/fumaça | MQ-2 (no Wokwi: potenciômetro) | D34 (ADC1, saída analógica) | Vazamento de gás e fumaça |
-| Teclado | Membrana 4x4 | D19, D18, D5, TX2, RX2, D4, D2, D15 | Senha de armar/desarmar |
+| Teclado | Membrana 4x4 | D19, D18, D5, TX2, RX2, D4, D2, D32 | Senha de armar/desarmar |
 | Buzzer | Piezoelétrico | D12 (LEDC/PWM) | Alarme sonoro local e bipes |
 | Sirene | Módulo relé 5 V | D27 | Aciona a sirene externa |
 | LED RGB | Cátodo comum | D25 / D26 / D33 | Status visual do sistema |

@@ -623,6 +623,8 @@ void lerTeclado() {
   }
 
   tUltimaTecla = millis();
+  // mostra a tecla no Monitor Serial (numeros aparecem como * para nao expor a senha)
+  Serial.printf("[TECLA] %c\n", isdigit(tecla) ? '*' : tecla);
 
   // Durante o bloqueio o teclado nao aceita nada
   if (estado == BLOQUEADO) {
