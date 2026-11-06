@@ -100,7 +100,7 @@
 #define PIN_KP_C1          16
 #define PIN_KP_C2          4
 #define PIN_KP_C3          2
-#define PIN_KP_C4          15
+#define PIN_KP_C4          32    // no GPIO15 a coluna A-D nao respondia no Wokwi
 
 // ---------- Regras de uso ----------
 #define SENHA_PADRAO       "1234"
@@ -724,6 +724,8 @@ void lerTeclado() {
   }
 
   tUltimaTecla = millis();
+  // mostra a tecla no Monitor Serial (numeros aparecem como * para nao expor a senha)
+  Serial.printf("[TECLA] %c\n", isdigit(tecla) ? '*' : tecla);
 
   // Durante o bloqueio o teclado nao aceita nada
   if (estado == BLOQUEADO) {
