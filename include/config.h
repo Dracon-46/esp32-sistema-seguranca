@@ -91,6 +91,8 @@
 #define INTERVALO_AMBIENTE_MS    2000UL   // DHT22 aceita 1 leitura a cada 2 s
 
 // ---------- Temporizacoes internas ----------
+#define TIMEOUT_WIFI_BOOT_MS     30000UL  // espera pelo Wi-Fi no boot (depois segue sem bloquear)
+#define INTERVALO_RECONEXAO_WIFI_MS 15000UL // pede nova conexao se o Wi-Fi cair
 #define INTERVALO_TELEMETRIA_MS  5000UL   // envia telemetria a cada 5 s
 #define INTERVALO_HEARTBEAT_MS   3000UL   // prova de vida (status da comunicacao)
 #define DEBOUNCE_SENSOR_MS       300UL
