@@ -108,6 +108,8 @@ unsigned long tUltimaPorta   = 0;
 unsigned long tTelemetria    = 0;
 unsigned long tHeartbeat     = 0;
 unsigned long tReconexao     = 0;
+unsigned long tWifi          = 0;
+bool wifiConectado           = false;
 unsigned long tBuzzer        = 0;
 unsigned long tLcd           = 0;
 unsigned long tAmbiente      = 0;
@@ -196,12 +198,16 @@ void atualizarLcd(const String &l1, const String &l2) {
 // ============================================================
 //  WIFI
 // ============================================================
+// Chamado uma vez no setup: inicia a conexao e espera um pouco por ela.
+// Se nao conectar a tempo, o alarme comeca assim mesmo e verificarWifi()
+// continua tentando em segundo plano.
 void conectarWifi() {
   atualizarLcd("Conectando Wi-Fi", "aguarde...");
   Serial.print("[WiFi] Conectando a ");
   Serial.println(WIFI_SSID);
 
   WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(true);
   if (strlen(WIFI_PASSWORD) == 0) {
     WiFi.begin(WIFI_SSID, NULL, WIFI_CHANNEL);
   } else {
@@ -209,7 +215,7 @@ void conectarWifi() {
   }
 
   unsigned long inicio = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - inicio < 20000UL) {
+  while (WiFi.status() != WL_CONNECTED && millis() - inicio < TIMEOUT_WIFI_BOOT_MS) {
     delay(250);
     Serial.print(".");
   }
@@ -219,7 +225,29 @@ void conectarWifi() {
     Serial.print("[WiFi] Conectado. IP: ");
     Serial.println(WiFi.localIP());
   } else {
-    Serial.println("\n[WiFi] Falha ao conectar.");
+    Serial.println("\n[WiFi] Ainda sem conexao; o alarme funciona e a conexao continua em segundo plano.");
+  }
+  wifiConectado = (WiFi.status() == WL_CONNECTED);
+}
+
+// Chamado no loop: nunca bloqueia, para o alarme continuar lendo os sensores.
+// Nao reinicia a tentativa em andamento; so pede reconexao de tempos em tempos.
+void verificarWifi() {
+  bool agora = (WiFi.status() == WL_CONNECTED);
+  if (agora != wifiConectado) {
+    wifiConectado = agora;
+    if (agora) {
+      Serial.print("[WiFi] Conectado. IP: ");
+      Serial.println(WiFi.localIP());
+    } else {
+      Serial.println("[WiFi] Conexao perdida, tentando reconectar...");
+    }
+    tWifi = millis();
+  }
+  if (!agora && millis() - tWifi >= INTERVALO_RECONEXAO_WIFI_MS) {
+    tWifi = millis();
+    Serial.println("[WiFi] Reconectando...");
+    WiFi.reconnect();
   }
 }
 
@@ -881,9 +909,10 @@ void setup() {
 //  LOOP
 // ============================================================
 void loop() {
-  // Conectividade
-  if (WiFi.status() != WL_CONNECTED) {
-    conectarWifi();
+  // Conectividade (sem bloquear: o alarme continua funcionando sem rede)
+  verificarWifi();
+  if (!wifiConectado) {
+    // aguardando o Wi-Fi
   } else if (!mqtt.connected()) {
     conectarMqtt();
   } else {
